@@ -300,7 +300,35 @@
   h1 .l { display: inline-block; transition: transform 0.2s; -webkit-text-stroke: 1.5px var(--ink); paint-order: stroke fill; text-shadow: 3px 3px 0 var(--ink); }
   h1 .l:hover { transform: translateY(-6px) rotate(-8deg); }
   h1 .sp { display: inline-block; width: 0.35em; }
-  .intro { color: var(--ink-soft); max-width: 44ch; margin: 0 auto 24px; }
+  .how { text-align: left; width: 100%; margin: 4px 0 22px; }
+  .how h2 { font-size: 1.2rem; margin: 0 0 14px; text-align: left; }
+  .how ol { list-style: none; padding: 0; margin: 0; display: grid; gap: 12px; }
+  .how li {
+    display: flex; gap: 14px; align-items: flex-start; padding: 14px 16px;
+    background: #fff; border: 2.5px solid var(--ink); border-radius: 14px 18px 13px 17px;
+    box-shadow: 3px 3px 0 var(--ink);
+  }
+  .how .num {
+    flex: 0 0 32px; height: 32px; border-radius: 50%; border: 2.5px solid var(--ink);
+    display: grid; place-items: center; font-family: var(--display); font-weight: 800;
+  }
+  .how strong { font-family: var(--display); display: block; margin-bottom: 2px; }
+  .how p { margin: 0; color: var(--ink-soft); font-size: 0.97rem; }
+  .how .example {
+    margin-top: 10px; padding: 10px 12px; border-radius: 10px; background: var(--paper);
+    border: 2px dashed var(--ink-soft); font-size: 0.92rem; color: var(--ink);
+  }
+  .how .example .row { display: flex; align-items: center; gap: 8px; margin-top: 6px; }
+  .how .example .w { flex: 0 0 6.5em; font-weight: 700; }
+  .how .example .bar { height: 10px; border-radius: 6px; border: 2px solid var(--ink); background: var(--mint); }
+  .how .example .row:not(:first-of-type) .bar { background: var(--sky); }
+  .how .example .pc { font-family: var(--display); font-weight: 800; font-size: 0.85rem; }
+  .expect {
+    width: 100%; background: var(--sticky); border-radius: 3px 3px 16px 3px; padding: 14px 16px; margin: 0 0 24px;
+    text-align: left; box-shadow: 3px 5px 0 rgba(43, 35, 80, 0.16); transform: rotate(-0.6deg);
+  }
+  .expect strong { font-family: var(--display); }
+  .expect p { margin: 4px 0 0; }
 
   /* End screen */
   .score-blob {
@@ -543,7 +571,15 @@ const TEXT = {
     title: "Myśl jak AI",
     logo: 'Myśl jak <span class="ai">AI</span>',
     hello: "Cześć, jestem Bajtek! Pokażę Ci, jak AI zgaduje kolejne słowa.",
-    intro: "Model językowy pisze tekst, przewidując kolejne słowo. W każdej rundzie zgadnij, które słowo AI uznałoby za najbardziej prawdopodobne.",
+    howTitle: "Jak działa AI, które pisze teksty?",
+    how: [
+      ["Uczy się na tekstach", "Model językowy (na przykład Copilot albo ChatGPT) przeczytał ogromną ilość tekstów: książek, stron internetowych, maili. Nauczył się z nich, jakie słowa zwykle występują po sobie."],
+      ["Liczy, co pasuje dalej", "AI nie myśli jak człowiek i nie sprawdza faktów. Dla każdego możliwego kolejnego słowa liczy, jak bardzo jest prawdopodobne."],
+      ["Dopisuje słowo po słowie", "Wybiera jedno słowo, dopisuje je i powtarza to samo dla następnego. Tak, słowo po słowie, powstaje cały tekst."]
+    ],
+    example: { sentence: "„Dzień dobry, w nawiązaniu do naszej …”", rows: [["rozmowy", 68], ["współpracy", 17], ["umowy", 11]] },
+    expectTitle: "Czego się spodziewać?",
+    expect: "13 krótkich rund, około 5 minut. W każdej zgadujesz, które słowo wybrałoby AI. Potem zobaczysz prawdopodobieństwa i dowiesz się, co z tego wynika w pracy z Copilotem.",
     start: "Zaczynamy",
     think: "Hmm… które słowo wybrałaby AI?",
     round: "Runda",
@@ -574,7 +610,15 @@ const TEXT = {
     title: "Think like AI",
     logo: 'Think like <span class="ai">AI</span>',
     hello: "Hi, I'm Bajtek! I'll show you how AI guesses the next word.",
-    intro: "A language model writes text by predicting the next word. In each round, guess which word the AI would consider most likely.",
+    howTitle: "How does AI that writes text work?",
+    how: [
+      ["It learns from text", "A language model (for example Copilot or ChatGPT) has read a huge amount of text: books, websites, emails. From them it learned which words usually follow each other."],
+      ["It scores what fits next", "AI doesn't think like a person and doesn't check facts. For every possible next word, it calculates how likely that word is."],
+      ["It writes word by word", "It picks one word, adds it, and does the same for the next one. Word by word, the whole text comes together."]
+    ],
+    example: { sentence: "“Hi, following up on our …”", rows: [["conversation", 68], ["partnership", 17], ["contract", 11]] },
+    expectTitle: "What to expect",
+    expect: "13 short rounds, about 5 minutes. In each one, you guess which word the AI would pick. Then you'll see the probabilities and learn what it means when you work with Copilot.",
     start: "Let's go",
     think: "Hmm… which word would the AI pick?",
     round: "Round",
@@ -757,7 +801,23 @@ function showStart() {
       ${mascot("idle")}
       <div class="bubble">${esc(T.hello)}</div>
       <h1>${titleHTML(T.title)}</h1>
-      <p class="intro">${esc(T.intro)}</p>
+      <section class="how">
+        <h2>${esc(T.howTitle)}</h2>
+        <ol>
+          ${T.how.map(([t, d], i) => `
+            <li>
+              <span class="num" style="background:${OPTION_COLORS[i]}">${i + 1}</span>
+              <div>
+                <strong>${esc(t)}</strong>
+                <p>${esc(d)}</p>
+                ${i === 1 ? `<div class="example">${esc(T.example.sentence)}
+                  ${T.example.rows.map(([w, pc]) => `<div class="row"><span class="w">${esc(w)}</span><span class="bar" style="width:${pc * 1.2}px"></span><span class="pc">${pc}%</span></div>`).join("")}
+                </div>` : ""}
+              </div>
+            </li>`).join("")}
+        </ol>
+      </section>
+      <div class="expect"><strong>${esc(T.expectTitle)}</strong><p>${esc(T.expect)}</p></div>
       <button class="btn" id="startBtn">${esc(T.start)} ${ICONS.arrow}</button>
     </div>`);
   $("startBtn").onclick = startGame;
