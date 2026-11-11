@@ -3,193 +3,364 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
 <title>Myśl jak AI</title>
 <style>
   :root {
-    --bg: #f4f6fb;
-    --card: #ffffff;
-    --text: #1d2433;
-    --muted: #667085;
-    --line: #e3e7ef;
-    --accent: #5b5bd6;
-    --accent-soft: #ecebfd;
-    --good: #1f9d63;
-    --good-soft: #e3f6ed;
-    --bad: #d6455b;
-    --bad-soft: #fdecef;
-    --bar: #d9dcf7;
-    --bar-top: #9fe0c0;
-    --ctx: #fff7e0;
-    --ctx-line: #f0d68a;
-    --shadow: 0 10px 30px rgba(29, 36, 51, 0.08);
+    --paper: #fff6e6;
+    --dot: #ecdcbf;
+    --card: #fffdf8;
+    --ink: #2b2350;
+    --ink-soft: #6d6591;
+    --tomato: #ff6b57;
+    --sun: #ffd447;
+    --mint: #43c59e;
+    --sky: #6cb8f0;
+    --pink: #ff9fc4;
+    --lilac: #b9a3f5;
+    --sticky: #fff0a3;
+    --display: ui-rounded, "Arial Rounded MT Bold", "Trebuchet MS", system-ui, sans-serif;
+    --body: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
   }
   * { box-sizing: border-box; }
   html, body { margin: 0; }
   body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+    background-color: var(--paper);
+    background-image: radial-gradient(var(--dot) 1.3px, transparent 1.5px);
+    background-size: 22px 22px;
+    color: var(--ink);
+    font-family: var(--body);
     line-height: 1.5;
     min-height: 100vh;
     display: flex;
     justify-content: center;
-    padding: 24px 16px 40px;
+    padding: 20px 16px 40px;
+    overflow-x: hidden;
   }
-  .app { width: 100%; max-width: 640px; }
-  header {
-    display: flex; align-items: center; justify-content: space-between;
-    gap: 12px; margin-bottom: 16px;
+
+  .app { width: 100%; max-width: 640px; position: relative; z-index: 1; }
+
+  /* Header */
+  header { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
+  .logo { font-family: var(--display); font-weight: 800; font-size: 1.3rem; display: flex; align-items: center; gap: 6px; }
+  .logo .ai {
+    display: inline-block; background: var(--tomato); color: #fff; padding: 0 8px;
+    border: 2.5px solid var(--ink); border-radius: 10px 14px 9px 13px; transform: rotate(-6deg);
+    box-shadow: 2px 2px 0 var(--ink);
   }
-  .logo { font-weight: 800; font-size: 1.25rem; letter-spacing: -0.01em; }
-  .logo span { color: var(--accent); }
-  .stats { display: flex; gap: 8px; font-size: 0.9rem; }
+  .stats { display: flex; gap: 8px; }
+  .lang {
+    display: flex; background: var(--card); border: 2.5px solid var(--ink); border-radius: 999px;
+    overflow: hidden; box-shadow: 2px 2px 0 var(--ink);
+  }
+  .lang button {
+    font-family: var(--display); font-weight: 800; font-size: 0.9rem; color: var(--ink);
+    background: transparent; border: 0; padding: 4px 12px; cursor: pointer;
+  }
+  .lang button + button { border-left: 2.5px solid var(--ink); }
+  .lang button[aria-pressed="true"] { background: var(--sun); }
+  .lang button:focus-visible { outline: 3px solid var(--tomato); outline-offset: -3px; }
   .pill {
-    background: var(--card); border: 1px solid var(--line);
-    padding: 4px 12px; border-radius: 999px; font-weight: 600; white-space: nowrap;
+    font-family: var(--display); font-weight: 800; font-size: 0.95rem;
+    background: var(--card); border: 2.5px solid var(--ink); box-shadow: 2px 2px 0 var(--ink);
+    padding: 3px 12px; border-radius: 999px; white-space: nowrap; display: flex; align-items: center; gap: 6px;
   }
-  .progress { height: 6px; background: var(--line); border-radius: 999px; overflow: hidden; margin-bottom: 20px; }
-  .progress > div { height: 100%; background: var(--accent); width: 0; transition: width 0.5s ease; }
+  .pill svg { width: 18px; height: 18px; }
+  .pill.bump { animation: bump 0.5s ease; }
+  @keyframes bump { 40% { transform: scale(1.25) rotate(-6deg); } }
+
+  /* Progress trail */
+  .trail { display: flex; justify-content: space-between; align-items: center; margin: 0 4px 18px; position: relative; }
+  .trail::before {
+    content: ""; position: absolute; left: 6px; right: 6px; top: 50%; border-top: 2.5px dashed var(--ink-soft); opacity: 0.5;
+  }
+  .step {
+    position: relative; width: 18px; height: 18px; border-radius: 50%;
+    background: var(--card); border: 2.5px solid var(--ink-soft); display: grid; place-items: center;
+  }
+  .step.now { width: 24px; height: 24px; background: var(--sun); border-color: var(--ink); animation: pulse 1.6s ease-in-out infinite; }
+  .step.ok { width: 24px; height: 24px; border: none; background: none; }
+  .step.ok svg { width: 24px; height: 24px; }
+  .step.no { background: var(--ink-soft); border-color: var(--ink-soft); }
+  @keyframes pulse { 50% { transform: scale(1.18); } }
+
+  /* Card */
   .card {
-    background: var(--card); border-radius: 20px; box-shadow: var(--shadow);
-    padding: 28px 24px;
+    background: var(--card);
+    border: 3px solid var(--ink);
+    border-radius: 26px 20px 28px 18px / 20px 28px 18px 26px;
+    box-shadow: 8px 8px 0 var(--ink);
+    padding: 22px 22px 26px;
   }
-  .round-label { color: var(--muted); font-size: 0.85rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px; }
-  .hint { color: var(--muted); margin: 0 0 18px; font-size: 0.95rem; }
+  .screen-in { animation: slideIn 0.45s cubic-bezier(.2,.9,.3,1.3); }
+  @keyframes slideIn { from { opacity: 0; transform: translateY(16px) rotate(-1deg); } to { opacity: 1; transform: none; } }
+
+  /* Mascot: Bajtek the robot */
+  .mascot { display: block; overflow: visible; }
+  .mascot .body { transform-origin: 60px 114px; animation: float 3s ease-in-out infinite; }
+  .mascot .antenna { transform-origin: 60px 24px; animation: sway 3.4s ease-in-out infinite; }
+  .mascot .eyes-open { transform-origin: 60px 54px; animation: blink 4.5s ease-in-out infinite; }
+  .mascot .arm-l { transform-origin: 35px 99px; }
+  .mascot .arm-r { transform-origin: 85px 99px; }
+  .mascot .eyes-happy, .mascot .m-big, .mascot .m-o { display: none; }
+  .mascot[data-mood="happy"] .eyes-open, .mascot[data-mood="happy"] .m-smile { display: none; }
+  .mascot[data-mood="happy"] .eyes-happy, .mascot[data-mood="happy"] .m-big { display: inline; }
+  .mascot[data-mood="happy"] .body { animation: hop 0.6s ease 2, float 3s ease-in-out 1.2s infinite; }
+  .mascot[data-mood="happy"] .arm-l { animation: waveL 0.4s ease-in-out 3; }
+  .mascot[data-mood="happy"] .arm-r { animation: waveR 0.4s ease-in-out 3; }
+  .mascot[data-mood="oops"] .m-smile { display: none; }
+  .mascot[data-mood="oops"] .m-o { display: inline; }
+  .mascot[data-mood="oops"] .body { animation: shake 0.5s ease, float 3s ease-in-out 0.5s infinite; }
+  .mascot .pupil { transition: transform 0.3s; }
+  .mascot[data-mood="think"] .pupil { transform: translate(2px, -3px); }
+  @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
+  @keyframes sway { 0%, 100% { transform: rotate(-6deg); } 50% { transform: rotate(6deg); } }
+  @keyframes blink { 0%, 92%, 100% { transform: scaleY(1); } 96% { transform: scaleY(0.1); } }
+  @keyframes waveL { 50% { transform: rotate(35deg); } }
+  @keyframes waveR { 50% { transform: rotate(-35deg); } }
+  @keyframes hop { 0%, 100% { transform: translateY(0) scale(1); } 30% { transform: translateY(0) scale(1.08, 0.9); } 60% { transform: translateY(-16px) scale(0.96, 1.05); } }
+  @keyframes shake { 25% { transform: translateX(-5px) rotate(-4deg); } 75% { transform: translateX(5px) rotate(4deg); } }
+
+  .guide { display: flex; align-items: center; gap: 14px; margin-bottom: 14px; }
+  .guide .mascot { width: 68px; height: 68px; flex: 0 0 68px; }
+  .bubble {
+    position: relative; flex: 1; background: #fff; border: 2.5px solid var(--ink);
+    border-radius: 18px 16px 20px 14px; padding: 10px 14px; font-family: var(--display); font-weight: 700;
+    box-shadow: 3px 3px 0 var(--ink);
+  }
+  .bubble::after {
+    content: ""; position: absolute; left: -9px; top: calc(50% - 7px); width: 13px; height: 13px; background: #fff;
+    border-left: 2.5px solid var(--ink); border-bottom: 2.5px solid var(--ink); transform: rotate(45deg);
+  }
+  .bubble.pop { animation: popIn 0.4s cubic-bezier(.2,.9,.3,1.4); }
+  .bubble.ok { background: #e2f8ef; }
+  .bubble.ok::after { background: #e2f8ef; }
+  .bubble.no { background: #ffe9e4; }
+  .bubble.no::after { background: #ffe9e4; }
+
+  .round-tag {
+    display: inline-block; font-family: var(--display); font-weight: 800; font-size: 0.8rem; letter-spacing: 0.08em;
+    text-transform: uppercase; background: var(--sky); color: var(--ink); border: 2px solid var(--ink);
+    border-radius: 8px; padding: 1px 10px; transform: rotate(-2deg); margin-bottom: 10px;
+  }
+
+  /* Context slip */
   .context {
-    background: var(--ctx); border: 1px solid var(--ctx-line); border-radius: 12px;
-    padding: 10px 14px; margin-bottom: 16px; font-size: 0.95rem;
-    display: flex; gap: 10px; align-items: flex-start;
+    position: relative; background: #eef6ff; border: 2.5px solid var(--ink); border-radius: 12px;
+    padding: 12px 14px; margin: 6px 0 16px; display: flex; gap: 12px; align-items: center;
+    transform: rotate(-0.6deg); font-size: 0.97rem;
   }
-  .context .ico { font-size: 1.1rem; line-height: 1.3; }
-  .sentence { font-size: 1.4rem; font-weight: 650; line-height: 1.4; margin: 0 0 22px; }
+  .context::before {
+    content: ""; position: absolute; top: -10px; right: 26px; width: 64px; height: 20px;
+    background: rgba(255, 212, 71, 0.75); border: 1px solid rgba(43, 35, 80, 0.15); transform: rotate(4deg);
+  }
+  .context .ico {
+    flex: 0 0 38px; height: 38px; border-radius: 50%; background: #fff; border: 2px solid var(--ink);
+    display: grid; place-items: center;
+  }
+  .context .ico svg { width: 22px; height: 22px; }
+
+  /* Sentence */
+  .sentence { font-family: var(--display); font-size: 1.5rem; font-weight: 800; line-height: 1.45; margin: 4px 0 20px; }
   .blank {
-    display: inline-block; min-width: 3.5em; border-bottom: 3px solid var(--accent);
-    color: var(--accent); text-align: center; padding: 0 4px;
+    display: inline-block; min-width: 3.6em; text-align: center; padding: 0 4px 6px; color: var(--tomato);
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='8' viewBox='0 0 20 8'%3E%3Cpath d='M0 4 Q5 0 10 4 T20 4' fill='none' stroke='%23ff6b57' stroke-width='2.5'/%3E%3C/svg%3E") repeat-x left bottom;
   }
-  .options { display: grid; gap: 10px; }
+  .blank.pop { animation: popIn 0.4s cubic-bezier(.2,.9,.3,1.5); }
+  @keyframes popIn { from { opacity: 0; transform: scale(0.6) rotate(-4deg); } to { opacity: 1; transform: none; } }
+
+  /* Answer options */
+  .options { display: grid; gap: 12px; }
   .opt {
-    position: relative; overflow: hidden; width: 100%;
-    font: inherit; font-size: 1.05rem; text-align: left; color: var(--text);
-    background: var(--card); border: 2px solid var(--line); border-radius: 14px;
-    padding: 14px 16px; cursor: pointer;
-    transition: border-color 0.15s, background 0.15s, transform 0.1s;
-    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    position: relative; overflow: hidden; width: 100%; font: inherit; font-size: 1.05rem; text-align: left;
+    color: var(--ink); background: #fff; border: 2.5px solid var(--ink); border-radius: 14px 18px 13px 17px;
+    box-shadow: 3px 3px 0 var(--ink); padding: 12px 14px; cursor: pointer;
+    display: flex; align-items: center; gap: 12px; transition: transform 0.12s, box-shadow 0.12s;
   }
-  .opt:hover:not(:disabled) { border-color: var(--accent); background: var(--accent-soft); }
-  .opt:active:not(:disabled) { transform: scale(0.99); }
-  .opt:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+  .opt:hover:not(:disabled) { transform: translate(-2px, -2px) rotate(-0.4deg); box-shadow: 5px 5px 0 var(--ink); }
+  .opt:active:not(:disabled) { transform: translate(2px, 2px); box-shadow: 1px 1px 0 var(--ink); }
+  .opt:focus-visible { outline: 3px solid var(--tomato); outline-offset: 3px; }
   .opt:disabled { cursor: default; }
   .opt .fill {
-    position: absolute; inset: 0 auto 0 0; width: 0; background: var(--bar);
-    transition: width 0.9s cubic-bezier(.2,.8,.2,1); z-index: 0;
+    position: absolute; inset: 0 auto 0 0; width: 0; z-index: 0;
+    background: repeating-linear-gradient(-45deg, var(--c) 0 9px, color-mix(in srgb, var(--c) 55%, white) 9px 18px);
+    border-right: 0 solid var(--ink); transition: width 1s cubic-bezier(.2,.8,.2,1.05);
   }
-  .opt .word, .opt .pct, .opt .tag { position: relative; z-index: 1; }
-  .opt .word { font-weight: 600; }
-  .opt .right { position: relative; z-index: 1; display: flex; align-items: center; gap: 8px; }
-  .opt .pct { font-weight: 700; font-variant-numeric: tabular-nums; opacity: 0; transition: opacity 0.4s 0.5s; }
-  .revealed .opt .pct { opacity: 1; }
-  .opt.top { border-color: var(--good); }
-  .opt.top .fill { background: var(--bar-top); }
-  .opt.picked:not(.top) { border-color: var(--bad); }
-  .tag {
-    font-size: 0.72rem; font-weight: 700; padding: 2px 8px; border-radius: 999px;
-    text-transform: uppercase; letter-spacing: 0.04em; white-space: nowrap;
+  .revealed .opt .fill { border-right-width: 2.5px; }
+  .opt .badge, .opt .word, .opt .right { position: relative; z-index: 1; }
+  .opt .badge {
+    flex: 0 0 30px; height: 30px; border-radius: 50%; background: var(--c); border: 2px solid var(--ink);
+    display: grid; place-items: center; font-family: var(--display); font-weight: 800; font-size: 0.9rem;
   }
-  .tag.ai { background: var(--good); color: #fff; }
-  .tag.you { background: var(--text); color: #fff; }
-  .feedback {
-    margin-top: 18px; padding: 12px 16px; border-radius: 12px; font-weight: 600;
-    animation: pop 0.35s ease;
+  .opt .word { font-weight: 700; flex: 1; }
+  .opt .right { display: flex; align-items: center; gap: 8px; }
+  .opt .pct {
+    font-family: var(--display); font-weight: 800; font-variant-numeric: tabular-nums; background: #fff;
+    border: 2px solid var(--ink); border-radius: 8px; padding: 0 6px; opacity: 0; transform: scale(0.5);
+    transition: opacity 0.3s 0.6s, transform 0.4s 0.6s cubic-bezier(.2,.9,.3,1.6);
   }
-  .feedback.ok { background: var(--good-soft); color: var(--good); }
-  .feedback.no { background: var(--bad-soft); color: var(--bad); }
+  .revealed .opt .pct { opacity: 1; transform: none; }
+  .opt.top { --c: var(--mint) !important; }
+  .opt.drawn { animation: wiggle 0.6s ease; }
+  @keyframes wiggle { 20% { transform: rotate(-1.5deg) scale(1.02); } 40% { transform: rotate(1.5deg) scale(1.02); } 60% { transform: rotate(-1deg); } }
+
+  .stamp {
+    font-family: var(--display); font-weight: 800; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em;
+    color: var(--tomato); background: rgba(255,255,255,0.85); border: 2.5px solid var(--tomato);
+    border-radius: 6px; padding: 1px 6px; transform: rotate(-8deg); white-space: nowrap;
+    animation: stampIn 0.35s 0.8s cubic-bezier(.2,.9,.3,1.3) both;
+  }
+  .sticker {
+    font-family: var(--display); font-weight: 800; font-size: 0.75rem; color: #fff; background: var(--ink);
+    border-radius: 999px; padding: 2px 9px; transform: rotate(5deg); white-space: nowrap;
+  }
+  @keyframes stampIn { from { opacity: 0; transform: scale(2.2) rotate(-20deg); } to { opacity: 1; transform: scale(1) rotate(-8deg); } }
+
+  /* Extra reveal note */
   .extra {
-    margin-top: 12px; padding: 12px 16px; border-radius: 12px;
-    background: var(--bad-soft); border: 1px dashed var(--bad); font-weight: 700;
-    animation: pop 0.35s ease;
+    margin-top: 16px; padding: 12px 14px; border-radius: 12px; background: #ffe9e4;
+    border: 2.5px dashed var(--tomato); font-family: var(--display); font-weight: 800; font-size: 1.05rem;
+    display: flex; align-items: center; gap: 10px; transform: rotate(0.8deg);
+    animation: popIn 0.4s 0.5s cubic-bezier(.2,.9,.3,1.4) both;
   }
+  .extra .bang {
+    flex: 0 0 28px; height: 28px; border-radius: 50%; background: var(--tomato); color: #fff;
+    display: grid; place-items: center; border: 2px solid var(--ink);
+  }
+
+  /* Sampling panel */
   .sample {
-    margin-top: 14px; padding: 14px 16px; border-radius: 12px; background: var(--accent-soft);
-    display: flex; flex-wrap: wrap; align-items: center; gap: 12px;
+    margin-top: 16px; padding: 14px; border-radius: 16px; background: #f3eeff; border: 2.5px dashed var(--ink-soft);
+    display: flex; flex-wrap: wrap; align-items: center; gap: 12px; animation: popIn 0.4s cubic-bezier(.2,.9,.3,1.3);
   }
-  .sample-out { font-size: 1.05rem; }
-  .sample-out b { color: var(--accent); font-size: 1.15rem; }
-  .sample-out.flash { animation: pop 0.35s ease; }
-  .history { width: 100%; font-size: 0.85rem; color: var(--muted); }
+  .sample-out { font-weight: 600; }
+  .sample-out b { font-family: var(--display); color: var(--tomato); font-size: 1.15rem; }
+  .sample-out.flash { animation: popIn 0.35s ease; }
+  .history { width: 100%; font-size: 0.85rem; color: var(--ink-soft); }
+  .die { width: 24px; height: 24px; }
+  .rolling .die { animation: roll 0.6s cubic-bezier(.2,.8,.3,1.2); }
+  @keyframes roll { from { transform: rotate(0) scale(1); } 50% { transform: rotate(200deg) scale(1.3); } to { transform: rotate(360deg) scale(1); } }
+
+  /* Lesson sticky note */
   .lesson {
-    margin-top: 18px; padding: 16px 18px; border-left: 4px solid var(--accent);
-    background: #f8f8ff; border-radius: 0 12px 12px 0; animation: pop 0.4s ease;
+    position: relative; margin-top: 24px; padding: 20px 18px 16px; background: var(--sticky);
+    border-radius: 3px 3px 18px 3px; box-shadow: 4px 6px 0 rgba(43, 35, 80, 0.18); transform: rotate(-1deg);
+    animation: noteIn 0.5s 0.15s cubic-bezier(.2,.9,.3,1.2) both;
   }
-  .lesson h3 { margin: 0 0 4px; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--accent); }
-  .lesson p { margin: 0; }
+  .lesson::before {
+    content: ""; position: absolute; top: -11px; left: calc(50% - 40px); width: 80px; height: 22px;
+    background: rgba(108, 184, 240, 0.55); border: 1px solid rgba(43, 35, 80, 0.12); transform: rotate(-3deg);
+  }
+  .lesson h3 {
+    margin: 0 0 6px; font-family: var(--display); font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.08em;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .lesson h3 svg { width: 20px; height: 20px; }
+  .lesson p { margin: 0; font-size: 1.02rem; }
+  @keyframes noteIn { from { opacity: 0; transform: translateY(18px) rotate(4deg); } to { opacity: 1; transform: rotate(-1deg); } }
+
+  /* Buttons */
   .btn {
-    font: inherit; font-weight: 700; font-size: 1rem; cursor: pointer;
-    border: none; border-radius: 12px; padding: 12px 22px;
-    background: var(--accent); color: #fff; transition: filter 0.15s, transform 0.1s;
+    font-family: var(--display); font-weight: 800; font-size: 1.05rem; cursor: pointer;
+    border: 3px solid var(--ink); border-radius: 14px 18px 13px 17px; padding: 11px 24px;
+    background: var(--tomato); color: #fff; box-shadow: 4px 4px 0 var(--ink);
+    transition: transform 0.12s, box-shadow 0.12s; display: inline-flex; align-items: center; justify-content: center; gap: 8px;
   }
-  .btn:hover { filter: brightness(1.08); }
-  .btn:active { transform: scale(0.98); }
-  .btn:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
-  .btn.secondary { background: var(--card); color: var(--accent); border: 2px solid var(--accent); padding: 8px 16px; }
-  .actions { margin-top: 20px; display: flex; justify-content: flex-end; }
-  .footnote { margin: 16px 4px 0; font-size: 0.82rem; color: var(--muted); text-align: center; }
+  .btn:hover { transform: translate(-2px, -2px) rotate(-1deg); box-shadow: 6px 6px 0 var(--ink); }
+  .btn:active { transform: translate(3px, 3px); box-shadow: 1px 1px 0 var(--ink); }
+  .btn:focus-visible { outline: 3px solid var(--sky); outline-offset: 3px; }
+  .btn.secondary { background: #fff; color: var(--ink); padding: 8px 16px; font-size: 0.98rem; }
+  .btn svg { width: 20px; height: 20px; }
+  .actions { margin-top: 24px; display: flex; justify-content: flex-end; }
+
+  .footnote { margin: 22px 8px 0; font-size: 0.82rem; color: var(--ink-soft); text-align: center; }
   .hidden { display: none !important; }
 
-  /* Start and end screens */
+  /* Start screen */
   .center { text-align: center; }
-  .big-emoji { font-size: 3rem; line-height: 1; margin-bottom: 8px; }
-  h1 { font-size: 1.8rem; margin: 0 0 8px; letter-spacing: -0.02em; }
-  h2 { font-size: 1.4rem; margin: 0 0 12px; letter-spacing: -0.01em; }
-  .intro { color: var(--muted); max-width: 46ch; margin: 0 auto 22px; }
-  .score-big { font-size: 3rem; font-weight: 800; color: var(--accent); line-height: 1.1; }
-  .score-msg { color: var(--muted); margin: 4px 0 24px; }
-  .rules { list-style: none; padding: 0; margin: 0 0 24px; text-align: left; display: grid; gap: 10px; }
+  .hero { display: flex; flex-direction: column; align-items: center; }
+  .hero .mascot { width: 150px; height: 150px; margin: 6px 0 4px; }
+  .hero .bubble { flex: none; max-width: 34ch; margin: 0 0 18px; }
+  .hero .bubble::after {
+    left: calc(50% - 7px); top: -9px; transform: rotate(135deg);
+  }
+  h1 { font-family: var(--display); font-size: 2.6rem; line-height: 1.1; margin: 4px 0 12px; letter-spacing: -0.01em; }
+  h1 .l { display: inline-block; transition: transform 0.2s; -webkit-text-stroke: 1.5px var(--ink); paint-order: stroke fill; text-shadow: 3px 3px 0 var(--ink); }
+  h1 .l:hover { transform: translateY(-6px) rotate(-8deg); }
+  h1 .sp { display: inline-block; width: 0.35em; }
+  .intro { color: var(--ink-soft); max-width: 44ch; margin: 0 auto 24px; }
+
+  /* End screen */
+  .score-blob {
+    display: inline-grid; place-items: center; width: 150px; height: 130px; margin: 0 auto 6px;
+    background: var(--sun); border: 3px solid var(--ink); box-shadow: 5px 5px 0 var(--ink);
+    border-radius: 58% 42% 55% 45% / 48% 58% 42% 52%; transform: rotate(-4deg);
+  }
+  .score-blob b { font-family: var(--display); font-size: 2.6rem; line-height: 1; }
+  .score-blob span { font-size: 0.8rem; font-weight: 700; }
+  .score-msg { font-family: var(--display); font-weight: 700; color: var(--ink-soft); margin: 10px 0 22px; }
+  h2 { font-family: var(--display); font-size: 1.45rem; margin: 0 0 18px; text-align: center; }
+  .rules { list-style: none; padding: 0; margin: 0 0 28px; display: grid; gap: 16px; }
   .rules li {
-    display: flex; gap: 14px; align-items: flex-start;
-    background: var(--bg); border-radius: 14px; padding: 14px 16px;
+    position: relative; display: flex; gap: 14px; align-items: flex-start; padding: 16px; border-radius: 3px 3px 16px 3px;
+    background: var(--bg-note); box-shadow: 3px 5px 0 rgba(43, 35, 80, 0.16); transform: rotate(var(--tilt));
+    animation: noteIn 0.5s both; animation-delay: var(--delay);
   }
   .rules .num {
-    flex: 0 0 32px; height: 32px; border-radius: 50%; background: var(--accent); color: #fff;
-    display: flex; align-items: center; justify-content: center; font-weight: 800;
+    flex: 0 0 34px; height: 34px; border-radius: 50%; background: #fff; border: 2.5px solid var(--ink);
+    display: grid; place-items: center; font-family: var(--display); font-weight: 800;
   }
-  .rules p { margin: 4px 0 0; }
-
-  @keyframes pop { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+  .rules strong { font-family: var(--display); }
 
   @media (max-width: 480px) {
-    body { padding-top: 16px; }
-    .card { padding: 22px 16px; border-radius: 16px; }
-    .sentence { font-size: 1.2rem; }
-    .opt { padding: 12px 14px; font-size: 1rem; }
+    body { padding-top: 14px; }
+    .card { padding: 18px 16px 22px; box-shadow: 6px 6px 0 var(--ink); }
+    .sentence { font-size: 1.25rem; }
+    .opt { padding: 10px 12px; font-size: 1rem; gap: 10px; }
+    .opt .badge { flex-basis: 26px; height: 26px; }
+    .guide .mascot { width: 56px; height: 56px; flex-basis: 56px; }
+    .bubble { font-size: 0.95rem; }
     .actions .btn { width: 100%; }
-    h1 { font-size: 1.5rem; }
+    h1 { font-size: 2.1rem; }
+    .stamp { font-size: 0.65rem; }
   }
   @media (prefers-reduced-motion: reduce) {
-    * { transition: none !important; animation: none !important; }
+    *, *::before, *::after { transition: none !important; animation: none !important; }
   }
 </style>
 </head>
 <body>
+
 <div class="app">
   <header>
-    <div class="logo">Myśl jak <span>AI</span></div>
+    <div class="logo" id="logo">Myśl jak <span class="ai">AI</span></div>
+    <div class="lang" id="lang" role="group" aria-label="Język / Language">
+      <button type="button" data-lang="pl" aria-pressed="true">PL</button>
+      <button type="button" data-lang="en" aria-pressed="false">EN</button>
+    </div>
     <div class="stats hidden" id="stats">
-      <div class="pill" id="progressText">1/7</div>
-      <div class="pill" id="scoreText">Punkty: 0</div>
+      <div class="pill" id="progressText">1/13</div>
+      <div class="pill" id="scoreText"></div>
     </div>
   </header>
-  <div class="progress hidden" id="progressBar"><div id="progressFill"></div></div>
+  <div class="trail hidden" id="trail"></div>
 
   <main class="card" id="screen"></main>
   <p class="footnote hidden" id="footnote">Prawdopodobieństwa są przykładowe, żeby pokazać zasadę działania.</p>
 </div>
 
 <script>
-const ROUNDS = [
+const ROUNDS_PL = [
   {
     sentence: "Dzień dobry, w nawiązaniu do naszej ___",
     options: [["rozmowy", 68], ["współpracy", 17], ["umowy", 11], ["wycieczki", 4]],
     lesson: "AI wybiera słowa, które najczęściej pojawiały się w podobnych tekstach. Dlatego maile pisane przez AI brzmią tak przewidywalnie."
+  },
+  {
+    sentence: "Dziękuję za szybką ___",
+    options: [["odpowiedź", 81], ["reakcję", 11], ["pomoc", 6], ["decyzję", 2]],
+    sampling: true,
+    lesson: "AI nie zawsze bierze najbardziej prawdopodobne słowo, czasem losuje. Dlatego ta sama prośba daje różne wersje odpowiedzi."
   },
   {
     sentence: "Proszę o przesłanie raportu do ___",
@@ -203,6 +374,7 @@ const ROUNDS = [
   },
   {
     context: "Kalendarz: Marketing ma stałą rezerwację w Sali Zielonej.",
+    icon: "calendar",
     sentence: "Spotkanie zespołu marketingu odbędzie się w Sali ___",
     options: [["Zielonej", 91], ["konferencyjnej", 5], ["numer 2", 3], ["głównej", 1]],
     lesson: "Ten sam model, inna odpowiedź. Kontekst zmienia wszystko. Dlatego Copilot działa lepiej, gdy ma dostęp do Twoich maili i plików."
@@ -219,23 +391,269 @@ const ROUNDS = [
     lesson: "AI nie wie, o którą Anię chodzi. Gdy coś jest niejednoznaczne, zgaduje. Precyzuj: kto, co, kiedy."
   },
   {
-    sentence: "Dziękuję za szybką ___",
-    options: [["odpowiedź", 81], ["reakcję", 11], ["pomoc", 6], ["decyzję", 2]],
-    sampling: true,
-    lesson: "AI nie zawsze bierze najbardziej prawdopodobne słowo, czasem losuje. Dlatego ta sama prośba daje różne wersje odpowiedzi."
+    sentence: "Hej ekipo, w piątek robimy ___",
+    options: [["pizzę", 44], ["imprezę", 31], ["spotkanie", 19], ["posiedzenie", 6]],
+    lesson: "Luźny początek, luźne słowa. AI dopasowuje się do stylu tekstu, który już widzi. Zobacz, co się stanie, gdy zaczniemy formalnie."
+  },
+  {
+    sentence: "Szanowni Państwo, w piątek odbędzie się ___",
+    options: [["spotkanie", 57], ["posiedzenie", 28], ["szkolenie", 12], ["impreza", 3]],
+    lesson: "Ten sam piątek, inny ton. Styl początku decyduje o reszcie. Napisz w poleceniu, jakiego tonu oczekujesz: formalnego, luźnego, krótkiego."
+  },
+  {
+    context: "Wzór z polecenia: „Temat: [Projekt Beta] Status tygodniowy”",
+    icon: "note",
+    sentence: "Temat: [Projekt Alfa] ___",
+    options: [["Status tygodniowy", 88], ["Aktualizacja", 6], ["Ważne", 4], ["Pilne!!!", 2]],
+    lesson: "Pokaż AI przykład, a skopiuje jego format. Jeden dobry wzór działa lepiej niż długi opis tego, czego chcesz."
+  },
+  {
+    sentence: "Zgodnie z nową polityką możemy pracować zdalnie ___ dni w tygodniu",
+    options: [["2", 41], ["3", 33], ["1", 16], ["5", 10]],
+    extra: "W polityce wprowadzonej w zeszłym miesiącu: 4 dni.",
+    lesson: "AI nie wie, co niedawno zmieniło się w Twojej firmie. Gdy nie widzi aktualnego dokumentu, podaje to, co typowe. Wskaż źródło, np. „na podstawie pliku Polityka pracy zdalnej”."
+  },
+  {
+    sentence: "Nowa osoba w zespole IT ma na imię ___",
+    options: [["Tomek", 39], ["Michał", 34], ["Kasia", 15], ["Ola", 12]],
+    lesson: "AI powtarza schematy z tekstów, na których się uczyło, także stereotypy. Sprawdzaj, czy odpowiedź nie zakłada czegoś, czego nie było w poleceniu."
+  },
+  {
+    context: "Pytasz AI: „Mój plan jest świetny, prawda?”",
+    icon: "chat",
+    sentence: "Tak, ten plan jest ___",
+    options: [["świetny", 47], ["dobry", 29], ["ciekawy", 16], ["ryzykowny", 8]],
+    lesson: "AI często przytakuje, bo po takim pytaniu w tekstach zwykle pada „tak”. Pytaj neutralnie: „Jakie są słabe strony tego planu?”."
   }
 ];
 
-const RULES = [
+const RULES_PL = [
   ["Dawaj kontekst", "pliki, maile, szczegóły."],
   ["Precyzuj", "kto, co, kiedy, ile."],
-  ["Sprawdzaj fakty i liczby", "AI brzmi pewnie, nawet gdy zgaduje."]
+  ["Sprawdzaj fakty i liczby", "AI brzmi pewnie, nawet gdy zgaduje."],
+  ["Pokaż wzór i określ ton", "jeden przykład mówi więcej niż długi opis."],
+  ["Pytaj neutralnie", "zamiast „prawda, że dobre?” zapytaj „co tu jest słabe?”."]
 ];
+
+const ROUNDS_EN = [
+  {
+    sentence: "Hi, following up on our ___",
+    options: [["conversation", 68], ["partnership", 17], ["contract", 11], ["trip", 4]],
+    lesson: "AI picks the words that most often appeared in similar texts. That's why emails written by AI sound so predictable."
+  },
+  {
+    sentence: "Thank you for your quick ___",
+    options: [["reply", 81], ["response", 11], ["help", 6], ["decision", 2]],
+    sampling: true,
+    lesson: "AI doesn't always take the most likely word. Sometimes it rolls the dice. That's why the same request gives different versions of an answer."
+  },
+  {
+    sentence: "Please send the report by ___",
+    options: [["Friday", 46], ["tomorrow", 31], ["the end of the week", 19], ["Easter", 4]],
+    lesson: "AI doesn't know your deadline. If you don't give it one, it guesses what's typical. Put specific details in your prompt."
+  },
+  {
+    sentence: "The team meeting will be held in the ___ room",
+    options: [["conference", 61], ["meeting", 18], ["main", 15], ["Green", 6]],
+    lesson: "Without context, AI picks the most generic answer. See what changes in the next round."
+  },
+  {
+    context: "Calendar: Marketing has a standing booking for the Green Room.",
+    icon: "calendar",
+    sentence: "The marketing team meeting will be held in the ___ Room",
+    options: [["Green", 91], ["conference", 5], ["meeting", 3], ["main", 1]],
+    lesson: "Same model, different answer. Context changes everything. That's why Copilot works better when it can see your emails and files."
+  },
+  {
+    sentence: "In the third quarter, our sales grew by ___",
+    options: [["10%", 34], ["15%", 27], ["20%", 22], ["3%", 17]],
+    extra: "In your report: 3%.",
+    lesson: "Most likely doesn't mean true. When AI can't see the data, it makes up a convincing number. That's called a hallucination. Always check the numbers."
+  },
+  {
+    sentence: "Please send this data to Anna from ___",
+    options: [["Sales", 38], ["Marketing", 29], ["HR", 21], ["IT", 12]],
+    lesson: "AI doesn't know which Anna you mean. When something is ambiguous, it guesses. Be specific: who, what, when."
+  },
+  {
+    sentence: "Hey team, on Friday we're having ___",
+    options: [["pizza", 44], ["a party", 31], ["a meeting", 19], ["a board meeting", 6]],
+    lesson: "A casual start brings casual words. AI matches the style of the text it already sees. See what happens when we start formally."
+  },
+  {
+    sentence: "Dear colleagues, please note that on Friday there will be ___",
+    options: [["a meeting", 57], ["a board meeting", 28], ["a training session", 12], ["a party", 3]],
+    lesson: "Same Friday, different tone. The opening sets the style for the rest. Tell the AI which tone you want: formal, casual, short."
+  },
+  {
+    context: "Example in the prompt: “Subject: [Project Beta] Weekly status”",
+    icon: "note",
+    sentence: "Subject: [Project Alpha] ___",
+    options: [["Weekly status", 88], ["Update", 6], ["Important", 4], ["URGENT!!!", 2]],
+    lesson: "Show the AI an example and it will copy the format. One good example works better than a long description of what you want."
+  },
+  {
+    sentence: "Under the new policy, we can work remotely ___ days a week",
+    options: [["2", 41], ["3", 33], ["1", 16], ["5", 10]],
+    extra: "In the policy introduced last month: 4 days.",
+    lesson: "AI doesn't know what recently changed at your company. When it can't see the current document, it gives you what's typical. Point it to the source, e.g. “based on the Remote Work Policy file”."
+  },
+  {
+    sentence: "The new person on the IT team is called ___",
+    options: [["Tom", 39], ["Mike", 34], ["Kate", 15], ["Emma", 12]],
+    lesson: "AI repeats patterns from the texts it learned from, including stereotypes. Check whether the answer assumes something that wasn't in your prompt."
+  },
+  {
+    context: "You ask the AI: “My plan is great, right?”",
+    icon: "chat",
+    sentence: "Yes, this plan is ___",
+    options: [["great", 47], ["good", 29], ["interesting", 16], ["risky", 8]],
+    lesson: "AI often agrees, because after a question like that, texts usually continue with “yes”. Ask neutrally: “What are the weak points of this plan?”"
+  }
+];
+
+const RULES_EN = [
+  ["Give context", "files, emails, details."],
+  ["Be specific", "who, what, when, how much."],
+  ["Check facts and numbers", "AI sounds confident even when it's guessing."],
+  ["Show an example and set the tone", "one example says more than a long description."],
+  ["Ask neutrally", "instead of “it's good, right?” ask “what's weak here?”."]
+];
+
+function starsWordPl(n) {
+  if (n === 1) return "gwiazdka";
+  const last = n % 10, lastTwo = n % 100;
+  return last >= 2 && last <= 4 && (lastTwo < 12 || lastTwo > 14) ? "gwiazdki" : "gwiazdek";
+}
+
+const TEXT = {
+  pl: {
+    title: "Myśl jak AI",
+    logo: 'Myśl jak <span class="ai">AI</span>',
+    hello: "Cześć, jestem Bajtek! Pokażę Ci, jak AI zgaduje kolejne słowa.",
+    intro: "Model językowy pisze tekst, przewidując kolejne słowo. W każdej rundzie zgadnij, które słowo AI uznałoby za najbardziej prawdopodobne.",
+    start: "Zaczynamy",
+    think: "Hmm… które słowo wybrałaby AI?",
+    round: "Runda",
+    ok: "Bingo! Myślisz jak AI. Masz gwiazdkę!",
+    no: (w) => `Ojej! AI wybrałoby „${w}”.`,
+    stamp: "Wybór AI",
+    you: "Ty",
+    sample: "Wylosuj jak AI",
+    sampleHint: "Kliknij kilka razy i zobacz, co wylosuje AI.",
+    sampled: "AI wylosowało:",
+    draws: "Losowania",
+    lesson: "Lekcja",
+    next: "Dalej",
+    result: "Zobacz wynik",
+    points: "Punkty",
+    stars: starsWordPl,
+    msgs: [
+      "Perfekcyjnie! Myślisz dokładnie jak AI.",
+      "Świetnie! Rozumiesz, jak AI wybiera słowa.",
+      "Nieźle! Kilka razy AI Cię zaskoczyło.",
+      "AI potrafi zaskoczyć. Teraz już wiesz, jak zgaduje."
+    ],
+    endTitle: "Jak to wykorzystać w pracy z Copilotem",
+    again: "Zagraj jeszcze raz",
+    footnote: "Prawdopodobieństwa są przykładowe, żeby pokazać zasadę działania."
+  },
+  en: {
+    title: "Think like AI",
+    logo: 'Think like <span class="ai">AI</span>',
+    hello: "Hi, I'm Bajtek! I'll show you how AI guesses the next word.",
+    intro: "A language model writes text by predicting the next word. In each round, guess which word the AI would consider most likely.",
+    start: "Let's go",
+    think: "Hmm… which word would the AI pick?",
+    round: "Round",
+    ok: "Bingo! You think like an AI. You earned a star!",
+    no: (w) => `Oops! The AI would pick “${w}”.`,
+    stamp: "AI's pick",
+    you: "You",
+    sample: "Roll like an AI",
+    sampleHint: "Click a few times and see what the AI picks.",
+    sampled: "The AI picked:",
+    draws: "Rolls",
+    lesson: "Lesson",
+    next: "Next",
+    result: "See your score",
+    points: "Points",
+    stars: (n) => (n === 1 ? "star" : "stars"),
+    msgs: [
+      "Perfect! You think exactly like an AI.",
+      "Great! You understand how AI picks words.",
+      "Not bad! The AI surprised you a few times.",
+      "AI can be surprising. Now you know how it guesses."
+    ],
+    endTitle: "How to use this with Copilot",
+    again: "Play again",
+    footnote: "The probabilities are examples, to show how it works."
+  }
+};
+
+// Set by setLang(): the active language's rounds, rules and UI text.
+let ROUNDS = ROUNDS_PL, RULES = RULES_PL, T = TEXT.pl;
+let lang = "pl";
+
+
+const OPTION_COLORS = ["var(--sun)", "var(--pink)", "var(--sky)", "var(--lilac)"];
+const NOTE_COLORS = ["#fff0a3", "#ffd9e8", "#d8ecff", "#d6f5e8", "#e8e0ff"];
+
+const STAR_PATH = "M12 2.5l2.8 6.1 6.7.7-5 4.5 1.4 6.6L12 17l-5.9 3.4 1.4-6.6-5-4.5 6.7-.7z";
+const ICONS = {
+  star: `<svg viewBox="0 0 24 24"><path d="${STAR_PATH}" fill="var(--sun)" stroke="var(--ink)" stroke-width="2" stroke-linejoin="round"/></svg>`,
+  calendar: `<svg viewBox="0 0 24 24" fill="none" stroke="var(--ink)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15" rx="3" fill="var(--pink)"/><path d="M3.5 10h17M8 3v4M16 3v4"/><circle cx="12" cy="15" r="1.6" fill="var(--ink)"/></svg>`,
+  note: `<svg viewBox="0 0 24 24" fill="none" stroke="var(--ink)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3.5h10l4 4v13H5z" fill="var(--sun)"/><path d="M15 3.5v4h4M8.5 12h7M8.5 16h5"/></svg>`,
+  chat: `<svg viewBox="0 0 24 24" fill="none" stroke="var(--ink)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5h16v10H10l-4.5 4v-4H4z" fill="var(--mint)"/><circle cx="9" cy="10.5" r=".8" fill="var(--ink)"/><circle cx="12" cy="10.5" r=".8" fill="var(--ink)"/><circle cx="15" cy="10.5" r=".8" fill="var(--ink)"/></svg>`,
+  bulb: `<svg viewBox="0 0 24 24" fill="none" stroke="var(--ink)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0-3.5 10.9c.6.5 1 1.2 1 2V17h5v-1.1c0-.8.4-1.5 1-2A6 6 0 0 0 12 3z" fill="#fff"/><path d="M10 20.5h4"/></svg>`,
+  die: `<svg class="die" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="4.5" fill="var(--pink)" stroke="var(--ink)" stroke-width="2"/><circle cx="8.2" cy="8.2" r="1.6" fill="var(--ink)"/><circle cx="12" cy="12" r="1.6" fill="var(--ink)"/><circle cx="15.8" cy="15.8" r="1.6" fill="var(--ink)"/></svg>`,
+  arrow: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h13M13 6l6 6-6 6"/></svg>`
+};
+
+// Bajtek, the little robot guide. Mood: idle, think, happy, oops.
+function mascot(mood = "idle") {
+  const glow = "#8ff0d0";
+  return `
+  <svg class="mascot" data-mood="${mood}" viewBox="0 0 120 120" aria-hidden="true">
+    <g class="body">
+      <g fill="none" stroke="var(--ink)" stroke-width="4" stroke-linecap="round">
+        <path class="arm arm-l" d="M35 99C27 99 24 95 23 90"/>
+        <path class="arm arm-r" d="M85 99C93 99 96 95 97 90"/>
+      </g>
+      <rect x="34" y="88" width="52" height="26" rx="11" fill="var(--lilac)" stroke="var(--ink)" stroke-width="4"/>
+      <path d="M60 109c-6-4-9-7-9-10a4.2 4.2 0 0 1 9-2a4.2 4.2 0 0 1 9 2c0 3-3 6-9 10z" fill="var(--tomato)" stroke="var(--ink)" stroke-width="2.5" stroke-linejoin="round"/>
+      <g class="antenna">
+        <path d="M60 26V13" stroke="var(--ink)" stroke-width="3.5" stroke-linecap="round"/>
+        <circle cx="60" cy="9" r="6" fill="var(--sun)" stroke="var(--ink)" stroke-width="3"/>
+      </g>
+      <rect x="7" y="45" width="12" height="22" rx="5" fill="var(--pink)" stroke="var(--ink)" stroke-width="3"/>
+      <rect x="101" y="45" width="12" height="22" rx="5" fill="var(--pink)" stroke="var(--ink)" stroke-width="3"/>
+      <rect x="16" y="24" width="88" height="64" rx="24" fill="var(--sky)" stroke="var(--ink)" stroke-width="4"/>
+      <ellipse cx="33" cy="33" rx="8" ry="4" fill="#fff" opacity=".6" transform="rotate(-20 33 33)"/>
+      <rect x="27" y="36" width="66" height="42" rx="15" fill="var(--ink)"/>
+      <g class="eyes-open">
+        <ellipse cx="46" cy="54" rx="6" ry="8" fill="${glow}"/>
+        <ellipse cx="74" cy="54" rx="6" ry="8" fill="${glow}"/>
+        <g class="pupil"><circle cx="48" cy="51" r="2" fill="#fff"/><circle cx="76" cy="51" r="2" fill="#fff"/></g>
+      </g>
+      <g class="eyes-happy" fill="none" stroke="${glow}" stroke-width="4" stroke-linecap="round">
+        <path d="M40 57q6-9 12 0"/><path d="M68 57q6-9 12 0"/>
+      </g>
+      <circle cx="35" cy="67" r="4" fill="var(--pink)" opacity=".9"/>
+      <circle cx="85" cy="67" r="4" fill="var(--pink)" opacity=".9"/>
+      <path class="m-smile" d="M54 66q6 5 12 0" fill="none" stroke="${glow}" stroke-width="3" stroke-linecap="round"/>
+      <path class="m-big" d="M52 64q8 11 16 0z" fill="var(--pink)"/>
+      <ellipse class="m-o" cx="60" cy="68" rx="4" ry="4.5" fill="${glow}"/>
+    </g>
+  </svg>`;
+}
 
 const $ = (id) => document.getElementById(id);
 const screen = $("screen");
 let current = 0;
 let score = 0;
+let results = [];
+let view = "start";
 
 function esc(s) {
   return String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -252,56 +670,122 @@ function shuffle(arr) {
 
 function sentenceHTML(s, word) {
   const fill = word ? esc(word) : "&nbsp;&nbsp;&nbsp;";
-  return esc(s).replace("___", `<span class="blank">${fill}</span>`);
+  return esc(s).replace("___", `<span class="blank${word ? " pop" : ""}">${fill}</span>`);
+}
+
+function setScreen(html) {
+  screen.classList.remove("screen-in");
+  screen.innerHTML = html;
+  void screen.offsetWidth;
+  screen.classList.add("screen-in");
 }
 
 function setChrome(inGame) {
   $("stats").classList.toggle("hidden", !inGame);
-  $("progressBar").classList.toggle("hidden", !inGame);
+  $("trail").classList.toggle("hidden", !inGame);
   $("footnote").classList.toggle("hidden", !inGame);
+  $("lang").classList.toggle("hidden", inGame);
 }
 
-function updateStats() {
-  $("progressText").textContent = `${current + 1}/${ROUNDS.length}`;
-  $("scoreText").textContent = `Punkty: ${score}`;
-  $("progressFill").style.width = `${(current / ROUNDS.length) * 100}%`;
+function readSavedLang() {
+  try { return localStorage.getItem("lang"); } catch (e) { return null; }
 }
+
+function setLang(l) {
+  lang = l === "en" ? "en" : "pl";
+  ROUNDS = lang === "en" ? ROUNDS_EN : ROUNDS_PL;
+  RULES = lang === "en" ? RULES_EN : RULES_PL;
+  T = TEXT[lang];
+  document.documentElement.lang = lang;
+  document.title = T.title;
+  $("logo").innerHTML = T.logo;
+  $("footnote").textContent = T.footnote;
+  document.querySelectorAll("#lang button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.lang === lang)));
+  try { localStorage.setItem("lang", lang); } catch (e) { /* storage unavailable */ }
+}
+
+document.querySelectorAll("#lang button").forEach((b) => b.addEventListener("click", () => {
+  if (b.dataset.lang === lang) return;
+  setLang(b.dataset.lang);
+  if (view === "end") showEnd(); else showStart();
+}));
+
+function updateStats(bump) {
+  $("progressText").textContent = `${current + 1}/${ROUNDS.length}`;
+  const sp = $("scoreText");
+  sp.innerHTML = `${ICONS.star}<span>${score}</span>`;
+  sp.setAttribute("aria-label", `${T.points}: ${score}`);
+  if (bump) { sp.classList.remove("bump"); void sp.offsetWidth; sp.classList.add("bump"); }
+  $("trail").innerHTML = ROUNDS.map((_, i) => {
+    if (i < results.length) return results[i] ? `<span class="step ok">${ICONS.star}</span>` : `<span class="step no"></span>`;
+    return `<span class="step${i === current ? " now" : ""}"></span>`;
+  }).join("");
+}
+
+/* ---------- Screens ---------- */
+function titleHTML(text) {
+  const colors = ["var(--tomato)", "var(--sun)", "var(--mint)", "var(--sky)", "var(--pink)", "var(--lilac)"];
+  let k = 0;
+  return [...text].map((ch) => {
+    if (ch === " ") return `<span class="sp"></span>`;
+    const c = colors[k % colors.length];
+    const rot = ((k * 37) % 13) - 6;
+    k++;
+    return `<span class="l" style="color:${c};transform:rotate(${rot}deg)">${esc(ch)}</span>`;
+  }).join("");
+}
+
+function startGame() { current = 0; score = 0; results = []; showRound(); }
 
 function showStart() {
+  view = "start";
   setChrome(false);
-  screen.innerHTML = `
-    <div class="center">
-      <div class="big-emoji">🤖</div>
-      <h1>Myśl jak AI</h1>
-      <p class="intro">Model językowy pisze tekst, przewidując kolejne słowo. W każdej rundzie zgadnij, które słowo AI uznałoby za najbardziej prawdopodobne.</p>
-      <button class="btn" id="startBtn">Zaczynamy</button>
-    </div>`;
-  $("startBtn").onclick = () => { current = 0; score = 0; showRound(); };
+  setScreen(`
+    <div class="hero center">
+      ${mascot("idle")}
+      <div class="bubble">${esc(T.hello)}</div>
+      <h1>${titleHTML(T.title)}</h1>
+      <p class="intro">${esc(T.intro)}</p>
+      <button class="btn" id="startBtn">${esc(T.start)} ${ICONS.arrow}</button>
+    </div>`);
+  $("startBtn").onclick = startGame;
   $("startBtn").focus();
 }
 
 function showRound() {
+  view = "round";
   setChrome(true);
   updateStats();
   const r = ROUNDS[current];
   const order = shuffle(r.options);
-  screen.innerHTML = `
-    <div class="round-label">Runda ${current + 1}</div>
-    <p class="hint">Które słowo wybrałaby AI?</p>
-    ${r.context ? `<div class="context"><span class="ico">📅</span><span>${esc(r.context)}</span></div>` : ""}
+  const letters = ["A", "B", "C", "D"];
+  setScreen(`
+    <div class="guide">
+      ${mascot("think")}
+      <div class="bubble" id="bubble">${esc(T.think)}</div>
+    </div>
+    <span class="round-tag">${esc(T.round)} ${current + 1}</span>
+    ${r.context ? `<div class="context"><span class="ico">${ICONS[r.icon] || ICONS.note}</span><span>${esc(r.context)}</span></div>` : ""}
     <p class="sentence" id="sentence">${sentenceHTML(r.sentence)}</p>
     <div class="options" id="options">
-      ${order.map(([w, p]) => `
-        <button class="opt" data-word="${esc(w)}" data-p="${p}">
+      ${order.map(([w, p], i) => `
+        <button class="opt" data-word="${esc(w)}" data-p="${p}" style="--c:${OPTION_COLORS[i]}">
           <span class="fill"></span>
+          <span class="badge">${letters[i]}</span>
           <span class="word">${esc(w)}</span>
           <span class="right"><span class="pct">${p}%</span></span>
         </button>`).join("")}
     </div>
-    <div id="after"></div>`;
+    <div id="after"></div>`);
   screen.querySelectorAll(".opt").forEach((b) => b.addEventListener("click", () => reveal(b)));
   screen.querySelector(".opt").focus({ preventScroll: true });
   window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function setBubble(text, cls) {
+  const b = $("bubble");
+  b.textContent = text;
+  b.className = "bubble pop " + (cls || "");
 }
 
 function reveal(btn) {
@@ -310,7 +794,8 @@ function reveal(btn) {
   const picked = btn.dataset.word;
   const correct = picked === top[0];
   if (correct) score++;
-  updateStats();
+  results.push(correct);
+  updateStats(correct);
 
   const opts = $("options");
   opts.classList.add("revealed");
@@ -319,42 +804,47 @@ function reveal(btn) {
     const right = b.querySelector(".right");
     if (b.dataset.word === top[0]) {
       b.classList.add("top");
-      right.insertAdjacentHTML("afterbegin", `<span class="tag ai">Wybór AI</span>`);
+      right.insertAdjacentHTML("afterbegin", `<span class="stamp">${esc(T.stamp)}</span>`);
     }
-    if (b === btn) {
-      b.classList.add("picked");
-      right.insertAdjacentHTML("afterbegin", `<span class="tag you">Ty</span>`);
-    }
+    if (b === btn) right.insertAdjacentHTML("afterbegin", `<span class="sticker">${esc(T.you)}</span>`);
   });
-  // Trigger bar animation on next frame
   requestAnimationFrame(() => requestAnimationFrame(() => {
-    opts.querySelectorAll(".opt").forEach((b) => { b.querySelector(".fill").style.width = b.dataset.p + "%"; });
+    opts.querySelectorAll(".opt").forEach((b) => {
+      const f = b.querySelector(".fill");
+      f.style.width = b.dataset.p + "%";
+    });
   }));
   $("sentence").innerHTML = sentenceHTML(r.sentence, top[0]);
 
+  screen.querySelector(".mascot").dataset.mood = correct ? "happy" : "oops";
+  if (correct) {
+    setBubble(T.ok, "ok");
+  } else {
+    setBubble(T.no(top[0]), "no");
+  }
+
   const after = $("after");
   const isLast = current === ROUNDS.length - 1;
+  const canSample = !!r.sampling;
   setTimeout(() => {
-    let html = correct
-      ? `<div class="feedback ok">Brawo! Myślisz jak AI. +1 punkt</div>`
-      : `<div class="feedback no">Tym razem nie. AI wybrałoby „${esc(top[0])}”.</div>`;
-    if (r.extra) html += `<div class="extra" id="extra" style="animation-delay:.6s;opacity:0;animation-fill-mode:forwards">${esc(r.extra)}</div>`;
-    if (r.sampling) html += `
+    let html = "";
+    if (r.extra) html += `<div class="extra"><span class="bang">!</span><span>${esc(r.extra)}</span></div>`;
+    if (canSample) html += `
       <div class="sample">
-        <button class="btn secondary" id="sampleBtn">🎲 Wylosuj jak AI</button>
-        <span class="sample-out" id="sampleOut">Kliknij kilka razy i zobacz, co wylosuje AI.</span>
+        <button class="btn secondary" id="sampleBtn">${ICONS.die} ${esc(T.sample)}</button>
+        <span class="sample-out" id="sampleOut">${esc(T.sampleHint)}</span>
         <div class="history hidden" id="history"></div>
       </div>`;
     html += `
-      <div class="lesson"><h3>Lekcja</h3><p>${esc(r.lesson)}</p></div>
-      <div class="actions"><button class="btn" id="nextBtn">${isLast ? "Zobacz wynik" : "Dalej"}</button></div>`;
+      <div class="lesson"><h3>${ICONS.bulb} ${esc(T.lesson)}</h3><p>${esc(r.lesson)}</p></div>
+      <div class="actions"><button class="btn" id="nextBtn">${esc(isLast ? T.result : T.next)} ${ICONS.arrow}</button></div>`;
     after.innerHTML = html;
-    if (r.sampling) setupSampling(r);
+    if (canSample) setupSampling(r);
     $("nextBtn").onclick = () => {
       if (isLast) showEnd(); else { current++; showRound(); }
     };
     after.scrollIntoView({ behavior: "smooth", block: "nearest" });
-  }, 900);
+  }, 1000);
 }
 
 function sampleWord(options) {
@@ -367,46 +857,53 @@ function sampleWord(options) {
 function setupSampling(r) {
   const counts = {};
   let n = 0;
-  $("sampleBtn").onclick = () => {
+  const btn = $("sampleBtn");
+  btn.onclick = () => {
     const w = sampleWord(r.options);
     counts[w] = (counts[w] || 0) + 1;
     n++;
+    btn.classList.remove("rolling"); void btn.offsetWidth; btn.classList.add("rolling");
     const out = $("sampleOut");
     out.classList.remove("flash"); void out.offsetWidth; out.classList.add("flash");
-    out.innerHTML = `AI wylosowało: <b>${esc(w)}</b>`;
+    out.innerHTML = `${esc(T.sampled)} <b>${esc(w)}</b>`;
     $("sentence").innerHTML = sentenceHTML(r.sentence, w);
+    screen.querySelectorAll(".opt").forEach((o) => {
+      if (o.dataset.word === w) { o.classList.remove("drawn"); void o.offsetWidth; o.classList.add("drawn"); }
+    });
     const hist = $("history");
     hist.classList.remove("hidden");
-    hist.textContent = `Losowania (${n}): ` + r.options
+    hist.textContent = `${T.draws} (${n}): ` + r.options
       .filter(([word]) => counts[word])
       .map(([word]) => `${word} × ${counts[word]}`).join(", ");
   };
 }
 
 function showEnd() {
-  current = ROUNDS.length - 1;
-  $("progressFill").style.width = "100%";
+  view = "end";
   setChrome(false);
   const total = ROUNDS.length;
-  const msg = score === total ? "Perfekcyjnie! Myślisz dokładnie jak AI."
-    : score >= total - 2 ? "Świetnie! Rozumiesz, jak AI wybiera słowa."
-    : score >= 3 ? "Nieźle! Kilka razy AI Cię zaskoczyło."
-    : "AI potrafi zaskoczyć. Teraz już wiesz, jak zgaduje.";
-  screen.innerHTML = `
-    <div class="center">
-      <div class="big-emoji">🎉</div>
-      <div class="score-big">${score}/${total}</div>
+  const msg = T.msgs[score === total ? 0 : score >= total - 3 ? 1 : score >= Math.ceil(total / 2) ? 2 : 3];
+  const good = score >= Math.ceil(total / 2);
+  setScreen(`
+    <div class="hero center">
+      ${mascot(good ? "happy" : "think")}
+      <div class="score-blob"><div><b>${score}/${total}</b><br><span>${esc(T.stars(score))}</span></div></div>
       <p class="score-msg">${msg}</p>
     </div>
-    <h2>Jak to wykorzystać w pracy z Copilotem</h2>
+    <h2>${esc(T.endTitle)}</h2>
     <ol class="rules">
-      ${RULES.map(([t, d], i) => `<li><span class="num">${i + 1}</span><div><strong>${esc(t)}:</strong> ${esc(d)}</div></li>`).join("")}
+      ${RULES.map(([t, d], i) => `
+        <li style="--bg-note:${NOTE_COLORS[i % NOTE_COLORS.length]};--tilt:${i % 2 ? 0.8 : -0.8}deg;--delay:${0.15 + i * 0.12}s">
+          <span class="num">${i + 1}</span><div><strong>${esc(t)}:</strong> ${esc(d)}</div>
+        </li>`).join("")}
     </ol>
-    <div class="center"><button class="btn" id="againBtn">Zagraj jeszcze raz</button></div>`;
-  $("againBtn").onclick = () => { current = 0; score = 0; showRound(); };
+    <div class="center"><button class="btn" id="againBtn">${esc(T.again)} ${ICONS.arrow}</button></div>`);
+  $("againBtn").onclick = startGame;
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
+const urlLang = new URLSearchParams(location.search).get("lang");
+setLang(urlLang === "en" || urlLang === "pl" ? urlLang : readSavedLang() || "pl");
 showStart();
 </script>
 </body>
