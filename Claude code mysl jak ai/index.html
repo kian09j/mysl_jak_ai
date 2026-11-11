@@ -1,0 +1,413 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Myśl jak AI</title>
+<style>
+  :root {
+    --bg: #f4f6fb;
+    --card: #ffffff;
+    --text: #1d2433;
+    --muted: #667085;
+    --line: #e3e7ef;
+    --accent: #5b5bd6;
+    --accent-soft: #ecebfd;
+    --good: #1f9d63;
+    --good-soft: #e3f6ed;
+    --bad: #d6455b;
+    --bad-soft: #fdecef;
+    --bar: #d9dcf7;
+    --bar-top: #9fe0c0;
+    --ctx: #fff7e0;
+    --ctx-line: #f0d68a;
+    --shadow: 0 10px 30px rgba(29, 36, 51, 0.08);
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+    line-height: 1.5;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    padding: 24px 16px 40px;
+  }
+  .app { width: 100%; max-width: 640px; }
+  header {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 12px; margin-bottom: 16px;
+  }
+  .logo { font-weight: 800; font-size: 1.25rem; letter-spacing: -0.01em; }
+  .logo span { color: var(--accent); }
+  .stats { display: flex; gap: 8px; font-size: 0.9rem; }
+  .pill {
+    background: var(--card); border: 1px solid var(--line);
+    padding: 4px 12px; border-radius: 999px; font-weight: 600; white-space: nowrap;
+  }
+  .progress { height: 6px; background: var(--line); border-radius: 999px; overflow: hidden; margin-bottom: 20px; }
+  .progress > div { height: 100%; background: var(--accent); width: 0; transition: width 0.5s ease; }
+  .card {
+    background: var(--card); border-radius: 20px; box-shadow: var(--shadow);
+    padding: 28px 24px;
+  }
+  .round-label { color: var(--muted); font-size: 0.85rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px; }
+  .hint { color: var(--muted); margin: 0 0 18px; font-size: 0.95rem; }
+  .context {
+    background: var(--ctx); border: 1px solid var(--ctx-line); border-radius: 12px;
+    padding: 10px 14px; margin-bottom: 16px; font-size: 0.95rem;
+    display: flex; gap: 10px; align-items: flex-start;
+  }
+  .context .ico { font-size: 1.1rem; line-height: 1.3; }
+  .sentence { font-size: 1.4rem; font-weight: 650; line-height: 1.4; margin: 0 0 22px; }
+  .blank {
+    display: inline-block; min-width: 3.5em; border-bottom: 3px solid var(--accent);
+    color: var(--accent); text-align: center; padding: 0 4px;
+  }
+  .options { display: grid; gap: 10px; }
+  .opt {
+    position: relative; overflow: hidden; width: 100%;
+    font: inherit; font-size: 1.05rem; text-align: left; color: var(--text);
+    background: var(--card); border: 2px solid var(--line); border-radius: 14px;
+    padding: 14px 16px; cursor: pointer;
+    transition: border-color 0.15s, background 0.15s, transform 0.1s;
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  }
+  .opt:hover:not(:disabled) { border-color: var(--accent); background: var(--accent-soft); }
+  .opt:active:not(:disabled) { transform: scale(0.99); }
+  .opt:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+  .opt:disabled { cursor: default; }
+  .opt .fill {
+    position: absolute; inset: 0 auto 0 0; width: 0; background: var(--bar);
+    transition: width 0.9s cubic-bezier(.2,.8,.2,1); z-index: 0;
+  }
+  .opt .word, .opt .pct, .opt .tag { position: relative; z-index: 1; }
+  .opt .word { font-weight: 600; }
+  .opt .right { position: relative; z-index: 1; display: flex; align-items: center; gap: 8px; }
+  .opt .pct { font-weight: 700; font-variant-numeric: tabular-nums; opacity: 0; transition: opacity 0.4s 0.5s; }
+  .revealed .opt .pct { opacity: 1; }
+  .opt.top { border-color: var(--good); }
+  .opt.top .fill { background: var(--bar-top); }
+  .opt.picked:not(.top) { border-color: var(--bad); }
+  .tag {
+    font-size: 0.72rem; font-weight: 700; padding: 2px 8px; border-radius: 999px;
+    text-transform: uppercase; letter-spacing: 0.04em; white-space: nowrap;
+  }
+  .tag.ai { background: var(--good); color: #fff; }
+  .tag.you { background: var(--text); color: #fff; }
+  .feedback {
+    margin-top: 18px; padding: 12px 16px; border-radius: 12px; font-weight: 600;
+    animation: pop 0.35s ease;
+  }
+  .feedback.ok { background: var(--good-soft); color: var(--good); }
+  .feedback.no { background: var(--bad-soft); color: var(--bad); }
+  .extra {
+    margin-top: 12px; padding: 12px 16px; border-radius: 12px;
+    background: var(--bad-soft); border: 1px dashed var(--bad); font-weight: 700;
+    animation: pop 0.35s ease;
+  }
+  .sample {
+    margin-top: 14px; padding: 14px 16px; border-radius: 12px; background: var(--accent-soft);
+    display: flex; flex-wrap: wrap; align-items: center; gap: 12px;
+  }
+  .sample-out { font-size: 1.05rem; }
+  .sample-out b { color: var(--accent); font-size: 1.15rem; }
+  .sample-out.flash { animation: pop 0.35s ease; }
+  .history { width: 100%; font-size: 0.85rem; color: var(--muted); }
+  .lesson {
+    margin-top: 18px; padding: 16px 18px; border-left: 4px solid var(--accent);
+    background: #f8f8ff; border-radius: 0 12px 12px 0; animation: pop 0.4s ease;
+  }
+  .lesson h3 { margin: 0 0 4px; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--accent); }
+  .lesson p { margin: 0; }
+  .btn {
+    font: inherit; font-weight: 700; font-size: 1rem; cursor: pointer;
+    border: none; border-radius: 12px; padding: 12px 22px;
+    background: var(--accent); color: #fff; transition: filter 0.15s, transform 0.1s;
+  }
+  .btn:hover { filter: brightness(1.08); }
+  .btn:active { transform: scale(0.98); }
+  .btn:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+  .btn.secondary { background: var(--card); color: var(--accent); border: 2px solid var(--accent); padding: 8px 16px; }
+  .actions { margin-top: 20px; display: flex; justify-content: flex-end; }
+  .footnote { margin: 16px 4px 0; font-size: 0.82rem; color: var(--muted); text-align: center; }
+  .hidden { display: none !important; }
+
+  /* Start and end screens */
+  .center { text-align: center; }
+  .big-emoji { font-size: 3rem; line-height: 1; margin-bottom: 8px; }
+  h1 { font-size: 1.8rem; margin: 0 0 8px; letter-spacing: -0.02em; }
+  h2 { font-size: 1.4rem; margin: 0 0 12px; letter-spacing: -0.01em; }
+  .intro { color: var(--muted); max-width: 46ch; margin: 0 auto 22px; }
+  .score-big { font-size: 3rem; font-weight: 800; color: var(--accent); line-height: 1.1; }
+  .score-msg { color: var(--muted); margin: 4px 0 24px; }
+  .rules { list-style: none; padding: 0; margin: 0 0 24px; text-align: left; display: grid; gap: 10px; }
+  .rules li {
+    display: flex; gap: 14px; align-items: flex-start;
+    background: var(--bg); border-radius: 14px; padding: 14px 16px;
+  }
+  .rules .num {
+    flex: 0 0 32px; height: 32px; border-radius: 50%; background: var(--accent); color: #fff;
+    display: flex; align-items: center; justify-content: center; font-weight: 800;
+  }
+  .rules p { margin: 4px 0 0; }
+
+  @keyframes pop { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+  @media (max-width: 480px) {
+    body { padding-top: 16px; }
+    .card { padding: 22px 16px; border-radius: 16px; }
+    .sentence { font-size: 1.2rem; }
+    .opt { padding: 12px 14px; font-size: 1rem; }
+    .actions .btn { width: 100%; }
+    h1 { font-size: 1.5rem; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; animation: none !important; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="logo">Myśl jak <span>AI</span></div>
+    <div class="stats hidden" id="stats">
+      <div class="pill" id="progressText">1/7</div>
+      <div class="pill" id="scoreText">Punkty: 0</div>
+    </div>
+  </header>
+  <div class="progress hidden" id="progressBar"><div id="progressFill"></div></div>
+
+  <main class="card" id="screen"></main>
+  <p class="footnote hidden" id="footnote">Prawdopodobieństwa są przykładowe, żeby pokazać zasadę działania.</p>
+</div>
+
+<script>
+const ROUNDS = [
+  {
+    sentence: "Dzień dobry, w nawiązaniu do naszej ___",
+    options: [["rozmowy", 68], ["współpracy", 17], ["umowy", 11], ["wycieczki", 4]],
+    lesson: "AI wybiera słowa, które najczęściej pojawiały się w podobnych tekstach. Dlatego maile pisane przez AI brzmią tak przewidywalnie."
+  },
+  {
+    sentence: "Proszę o przesłanie raportu do ___",
+    options: [["piątku", 46], ["jutra", 31], ["końca tygodnia", 19], ["Wielkanocy", 4]],
+    lesson: "AI nie zna Twojego terminu. Jeśli go nie podasz, zgadnie to, co typowe. Konkretne informacje wpisuj w polecenie."
+  },
+  {
+    sentence: "Spotkanie zespołu odbędzie się w sali ___",
+    options: [["konferencyjnej", 61], ["numer 2", 18], ["głównej", 15], ["Zielonej", 6]],
+    lesson: "Bez kontekstu AI wybiera najbardziej ogólną odpowiedź. Zobacz, co się zmieni w następnej rundzie."
+  },
+  {
+    context: "Kalendarz: Marketing ma stałą rezerwację w Sali Zielonej.",
+    sentence: "Spotkanie zespołu marketingu odbędzie się w Sali ___",
+    options: [["Zielonej", 91], ["konferencyjnej", 5], ["numer 2", 3], ["głównej", 1]],
+    lesson: "Ten sam model, inna odpowiedź. Kontekst zmienia wszystko. Dlatego Copilot działa lepiej, gdy ma dostęp do Twoich maili i plików."
+  },
+  {
+    sentence: "W trzecim kwartale nasza sprzedaż wzrosła o ___",
+    options: [["10%", 34], ["15%", 27], ["20%", 22], ["3%", 17]],
+    extra: "W Twoim raporcie: 3%.",
+    lesson: "Najbardziej prawdopodobne nie znaczy prawdziwe. Gdy AI nie widzi danych, wymyśla przekonująco brzmiącą liczbę. To jest halucynacja. Liczby zawsze sprawdzaj."
+  },
+  {
+    sentence: "Przekaż proszę te dane Ani z działu ___",
+    options: [["sprzedaży", 38], ["marketingu", 29], ["HR", 21], ["IT", 12]],
+    lesson: "AI nie wie, o którą Anię chodzi. Gdy coś jest niejednoznaczne, zgaduje. Precyzuj: kto, co, kiedy."
+  },
+  {
+    sentence: "Dziękuję za szybką ___",
+    options: [["odpowiedź", 81], ["reakcję", 11], ["pomoc", 6], ["decyzję", 2]],
+    sampling: true,
+    lesson: "AI nie zawsze bierze najbardziej prawdopodobne słowo, czasem losuje. Dlatego ta sama prośba daje różne wersje odpowiedzi."
+  }
+];
+
+const RULES = [
+  ["Dawaj kontekst", "pliki, maile, szczegóły."],
+  ["Precyzuj", "kto, co, kiedy, ile."],
+  ["Sprawdzaj fakty i liczby", "AI brzmi pewnie, nawet gdy zgaduje."]
+];
+
+const $ = (id) => document.getElementById(id);
+const screen = $("screen");
+let current = 0;
+let score = 0;
+
+function esc(s) {
+  return String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+}
+
+function shuffle(arr) {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function sentenceHTML(s, word) {
+  const fill = word ? esc(word) : "&nbsp;&nbsp;&nbsp;";
+  return esc(s).replace("___", `<span class="blank">${fill}</span>`);
+}
+
+function setChrome(inGame) {
+  $("stats").classList.toggle("hidden", !inGame);
+  $("progressBar").classList.toggle("hidden", !inGame);
+  $("footnote").classList.toggle("hidden", !inGame);
+}
+
+function updateStats() {
+  $("progressText").textContent = `${current + 1}/${ROUNDS.length}`;
+  $("scoreText").textContent = `Punkty: ${score}`;
+  $("progressFill").style.width = `${(current / ROUNDS.length) * 100}%`;
+}
+
+function showStart() {
+  setChrome(false);
+  screen.innerHTML = `
+    <div class="center">
+      <div class="big-emoji">🤖</div>
+      <h1>Myśl jak AI</h1>
+      <p class="intro">Model językowy pisze tekst, przewidując kolejne słowo. W każdej rundzie zgadnij, które słowo AI uznałoby za najbardziej prawdopodobne.</p>
+      <button class="btn" id="startBtn">Zaczynamy</button>
+    </div>`;
+  $("startBtn").onclick = () => { current = 0; score = 0; showRound(); };
+  $("startBtn").focus();
+}
+
+function showRound() {
+  setChrome(true);
+  updateStats();
+  const r = ROUNDS[current];
+  const order = shuffle(r.options);
+  screen.innerHTML = `
+    <div class="round-label">Runda ${current + 1}</div>
+    <p class="hint">Które słowo wybrałaby AI?</p>
+    ${r.context ? `<div class="context"><span class="ico">📅</span><span>${esc(r.context)}</span></div>` : ""}
+    <p class="sentence" id="sentence">${sentenceHTML(r.sentence)}</p>
+    <div class="options" id="options">
+      ${order.map(([w, p]) => `
+        <button class="opt" data-word="${esc(w)}" data-p="${p}">
+          <span class="fill"></span>
+          <span class="word">${esc(w)}</span>
+          <span class="right"><span class="pct">${p}%</span></span>
+        </button>`).join("")}
+    </div>
+    <div id="after"></div>`;
+  screen.querySelectorAll(".opt").forEach((b) => b.addEventListener("click", () => reveal(b)));
+  screen.querySelector(".opt").focus({ preventScroll: true });
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function reveal(btn) {
+  const r = ROUNDS[current];
+  const top = r.options.reduce((a, b) => (b[1] > a[1] ? b : a));
+  const picked = btn.dataset.word;
+  const correct = picked === top[0];
+  if (correct) score++;
+  updateStats();
+
+  const opts = $("options");
+  opts.classList.add("revealed");
+  opts.querySelectorAll(".opt").forEach((b) => {
+    b.disabled = true;
+    const right = b.querySelector(".right");
+    if (b.dataset.word === top[0]) {
+      b.classList.add("top");
+      right.insertAdjacentHTML("afterbegin", `<span class="tag ai">Wybór AI</span>`);
+    }
+    if (b === btn) {
+      b.classList.add("picked");
+      right.insertAdjacentHTML("afterbegin", `<span class="tag you">Ty</span>`);
+    }
+  });
+  // Trigger bar animation on next frame
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    opts.querySelectorAll(".opt").forEach((b) => { b.querySelector(".fill").style.width = b.dataset.p + "%"; });
+  }));
+  $("sentence").innerHTML = sentenceHTML(r.sentence, top[0]);
+
+  const after = $("after");
+  const isLast = current === ROUNDS.length - 1;
+  setTimeout(() => {
+    let html = correct
+      ? `<div class="feedback ok">Brawo! Myślisz jak AI. +1 punkt</div>`
+      : `<div class="feedback no">Tym razem nie. AI wybrałoby „${esc(top[0])}”.</div>`;
+    if (r.extra) html += `<div class="extra" id="extra" style="animation-delay:.6s;opacity:0;animation-fill-mode:forwards">${esc(r.extra)}</div>`;
+    if (r.sampling) html += `
+      <div class="sample">
+        <button class="btn secondary" id="sampleBtn">🎲 Wylosuj jak AI</button>
+        <span class="sample-out" id="sampleOut">Kliknij kilka razy i zobacz, co wylosuje AI.</span>
+        <div class="history hidden" id="history"></div>
+      </div>`;
+    html += `
+      <div class="lesson"><h3>Lekcja</h3><p>${esc(r.lesson)}</p></div>
+      <div class="actions"><button class="btn" id="nextBtn">${isLast ? "Zobacz wynik" : "Dalej"}</button></div>`;
+    after.innerHTML = html;
+    if (r.sampling) setupSampling(r);
+    $("nextBtn").onclick = () => {
+      if (isLast) showEnd(); else { current++; showRound(); }
+    };
+    after.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  }, 900);
+}
+
+function sampleWord(options) {
+  const total = options.reduce((s, o) => s + o[1], 0);
+  let x = Math.random() * total;
+  for (const [w, p] of options) { if ((x -= p) < 0) return w; }
+  return options[options.length - 1][0];
+}
+
+function setupSampling(r) {
+  const counts = {};
+  let n = 0;
+  $("sampleBtn").onclick = () => {
+    const w = sampleWord(r.options);
+    counts[w] = (counts[w] || 0) + 1;
+    n++;
+    const out = $("sampleOut");
+    out.classList.remove("flash"); void out.offsetWidth; out.classList.add("flash");
+    out.innerHTML = `AI wylosowało: <b>${esc(w)}</b>`;
+    $("sentence").innerHTML = sentenceHTML(r.sentence, w);
+    const hist = $("history");
+    hist.classList.remove("hidden");
+    hist.textContent = `Losowania (${n}): ` + r.options
+      .filter(([word]) => counts[word])
+      .map(([word]) => `${word} × ${counts[word]}`).join(", ");
+  };
+}
+
+function showEnd() {
+  current = ROUNDS.length - 1;
+  $("progressFill").style.width = "100%";
+  setChrome(false);
+  const total = ROUNDS.length;
+  const msg = score === total ? "Perfekcyjnie! Myślisz dokładnie jak AI."
+    : score >= total - 2 ? "Świetnie! Rozumiesz, jak AI wybiera słowa."
+    : score >= 3 ? "Nieźle! Kilka razy AI Cię zaskoczyło."
+    : "AI potrafi zaskoczyć. Teraz już wiesz, jak zgaduje.";
+  screen.innerHTML = `
+    <div class="center">
+      <div class="big-emoji">🎉</div>
+      <div class="score-big">${score}/${total}</div>
+      <p class="score-msg">${msg}</p>
+    </div>
+    <h2>Jak to wykorzystać w pracy z Copilotem</h2>
+    <ol class="rules">
+      ${RULES.map(([t, d], i) => `<li><span class="num">${i + 1}</span><div><strong>${esc(t)}:</strong> ${esc(d)}</div></li>`).join("")}
+    </ol>
+    <div class="center"><button class="btn" id="againBtn">Zagraj jeszcze raz</button></div>`;
+  $("againBtn").onclick = () => { current = 0; score = 0; showRound(); };
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+showStart();
+</script>
+</body>
+</html>
