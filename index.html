@@ -158,9 +158,10 @@
   .opt .right { display: flex; align-items: center; gap: 6px; }
   .opt .pct {
     font-size: 14px; font-weight: 600; color: var(--muted); font-variant-numeric: tabular-nums;
-    opacity: 0; transition: opacity 0.3s 0.4s;
+    /* visibility (not just opacity) keeps screen readers from announcing the answer early */
+    opacity: 0; visibility: hidden; transition: opacity 0.3s 0.4s, visibility 0s 0.4s;
   }
-  .revealed .opt .pct { opacity: 1; }
+  .revealed .opt .pct { opacity: 1; visibility: visible; }
   .opt.top { --c: var(--green-bg) !important; border-color: #b9dcc0; }
   .opt.top .pct { color: var(--green); }
   .opt.drawn { animation: flashRow 0.7s ease; }
@@ -298,8 +299,8 @@
 <script>
 const ROUNDS_PL = [
   {
-    sentence: "Dzień dobry, w nawiązaniu do naszej ___",
-    options: [["rozmowy", 68], ["współpracy", 17], ["umowy", 11], ["wycieczki", 4]],
+    sentence: "W razie pytań proszę o ___",
+    options: [["kontakt", 72], ["informację", 14], ["wiadomość", 10], ["cierpliwość", 4]],
     lesson: "AI wybiera słowa, które najczęściej pojawiały się w podobnych tekstach. Dlatego maile pisane przez AI brzmią tak przewidywalnie."
   },
   {
@@ -362,6 +363,7 @@ const ROUNDS_PL = [
   {
     sentence: "Nowa osoba w zespole IT ma na imię ___",
     options: [["Tomek", 39], ["Michał", 34], ["Kasia", 15], ["Ola", 12]],
+    ok: "Trafione, tak wybrałoby AI. Ale zauważ: nikt nie napisał, że to mężczyzna.",
     lesson: "AI powtarza schematy z tekstów, na których się uczyło, także stereotypy. Sprawdzaj, czy odpowiedź nie zakłada czegoś, czego nie było w poleceniu."
   },
   {
@@ -369,7 +371,7 @@ const ROUNDS_PL = [
     icon: "chat",
     sentence: "Tak, ten plan jest ___",
     options: [["świetny", 47], ["dobry", 29], ["ciekawy", 16], ["ryzykowny", 8]],
-    lesson: "AI często przytakuje, bo po takim pytaniu w tekstach zwykle pada „tak”. Pytaj neutralnie: „Jakie są słabe strony tego planu?”."
+    lesson: "AI często przytakuje. Podczas treningu ludzie oceniali jego odpowiedzi i chętniej nagradzali te, które się z nimi zgadzały. Pytaj neutralnie: „Jakie są słabe strony tego planu?”."
   }
 ];
 
@@ -383,8 +385,8 @@ const RULES_PL = [
 
 const ROUNDS_EN = [
   {
-    sentence: "Hi, following up on our ___",
-    options: [["conversation", 68], ["partnership", 17], ["contract", 11], ["trip", 4]],
+    sentence: "If you have any questions, please feel free to ___",
+    options: [["reach out", 72], ["contact me", 14], ["ask", 10], ["wait", 4]],
     lesson: "AI picks the words that most often appeared in similar texts. That's why emails written by AI sound so predictable."
   },
   {
@@ -447,6 +449,7 @@ const ROUNDS_EN = [
   {
     sentence: "The new person on the IT team is called ___",
     options: [["Tom", 39], ["Mike", 34], ["Kate", 15], ["Emma", 12]],
+    ok: "Right, that's what the AI would pick. But notice: nobody said it was a man.",
     lesson: "AI repeats patterns from the texts it learned from, including stereotypes. Check whether the answer assumes something that wasn't in your prompt."
   },
   {
@@ -454,7 +457,7 @@ const ROUNDS_EN = [
     icon: "chat",
     sentence: "Yes, this plan is ___",
     options: [["great", 47], ["good", 29], ["interesting", 16], ["risky", 8]],
-    lesson: "AI often agrees, because after a question like that, texts usually continue with “yes”. Ask neutrally: “What are the weak points of this plan?”"
+    lesson: "AI often agrees with you. During training, people rated its answers and tended to reward the ones that agreed with them. Ask neutrally: “What are the weak points of this plan?”"
   }
 ];
 
@@ -726,7 +729,7 @@ function showRound() {
   setScreen(`
     <div class="guide">
       ${mascot("think")}
-      <div class="bubble" id="bubble">${esc(T.think)}</div>
+      <div class="bubble" id="bubble" role="status" aria-live="polite">${esc(T.think)}</div>
     </div>
     <span class="round-tag">${esc(T.round)} ${current + 1}</span>
     ${r.context ? `<div class="context"><span class="ico">${ICONS[r.icon] || ICONS.note}</span><span>${esc(r.context)}</span></div>` : ""}
@@ -782,7 +785,7 @@ function reveal(btn) {
 
   screen.querySelector(".mascot").dataset.mood = correct ? "happy" : "oops";
   if (correct) {
-    setBubble(T.ok, "ok");
+    setBubble(r.ok || T.ok, "ok"); // a round can swap the cheerful default for its own message
   } else {
     setBubble(T.no(top[0]), "no");
   }
@@ -792,7 +795,7 @@ function reveal(btn) {
   const canSample = !!r.sampling;
   setTimeout(() => {
     let html = "";
-    if (r.extra) html += `<div class="extra"><span class="bang">!</span><span>${esc(r.extra)}</span></div>`;
+    if (r.extra) html += `<div class="extra"><span class="bang" aria-hidden="true">!</span><span id="extraText">${esc(r.extra)}</span></div>`;
     if (canSample) html += `
       <div class="sample">
         <button class="btn secondary" id="sampleBtn">${ICONS.die} ${esc(T.sample)}</button>
@@ -800,13 +803,16 @@ function reveal(btn) {
         <div class="history hidden" id="history"></div>
       </div>`;
     html += `
-      <div class="lesson"><h3>${ICONS.bulb} ${esc(T.lesson)}</h3><p>${esc(r.lesson)}</p></div>
-      <div class="actions"><button class="btn" id="nextBtn">${esc(isLast ? T.result : T.next)} ${ICONS.arrow}</button></div>`;
+      <div class="lesson"><h3>${ICONS.bulb} ${esc(T.lesson)}</h3><p id="lessonText">${esc(r.lesson)}</p></div>
+      <div class="actions"><button class="btn" id="nextBtn" aria-describedby="${r.extra ? "extraText " : ""}lessonText">${esc(isLast ? T.result : T.next)} ${ICONS.arrow}</button></div>`;
     after.innerHTML = html;
     if (canSample) setupSampling(r);
-    $("nextBtn").onclick = () => {
+    const nextBtn = $("nextBtn");
+    nextBtn.onclick = () => {
       if (isLast) showEnd(); else { current++; showRound(); }
     };
+    // The option buttons were disabled, so focus fell back to the page: hand it to the next step.
+    nextBtn.focus({ preventScroll: true });
     after.scrollIntoView({ behavior: "smooth", block: "nearest" });
   }, 1000);
 }
