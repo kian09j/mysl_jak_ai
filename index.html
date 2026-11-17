@@ -217,6 +217,8 @@
   .actions { margin-top: 20px; display: flex; justify-content: flex-end; }
 
   .footnote { margin: 32px 0 0; padding-top: 12px; border-top: 1px solid var(--line); font-size: 12px; color: var(--faint); }
+  .series { margin: 26px 0 0; font-size: 14px; color: var(--muted); }
+  .series a { color: var(--blue-text); margin-right: 10px; white-space: nowrap; }
   .hidden { display: none !important; }
 
   /* Start and end pages */
@@ -513,6 +515,8 @@ const TEXT = {
     ],
     endTitle: "Jak to wykorzystać w pracy z Copilotem",
     again: "Zagraj jeszcze raz",
+    series: "Z tej samej serii:",
+    games: [["Popraw polecenie", "https://kian09j.github.io/popraw_polecenie/"], ["Czy mogę to wkleić?", "https://kian09j.github.io/czy_moge_to_wkleic/"]],
     footnote: "Prawdopodobieństwa są przykładowe, żeby pokazać zasadę działania."
   },
   en: {
@@ -552,6 +556,8 @@ const TEXT = {
     ],
     endTitle: "How to use this with Copilot",
     again: "Play again",
+    series: "Also in this series:",
+    games: [["Fix the prompt", "https://kian09j.github.io/popraw_polecenie/"], ["Can I paste this?", "https://kian09j.github.io/czy_moge_to_wkleic/"]],
     footnote: "The probabilities are examples, to show how it works."
   }
 };
@@ -688,6 +694,11 @@ function titleHTML(text) {
 
 function startGame() { current = 0; score = 0; results = []; showRound(); }
 
+// Links to the other games in the series, keeping the current language.
+function seriesHTML() {
+  return `<p class="series">${esc(T.series)} ${T.games.map(([name, url]) => `<a href="${url}?lang=${lang}">${esc(name)} ${ICONS.arrow}</a>`).join("")}</p>`;
+}
+
 function showStart() {
   view = "start";
   setChrome(false);
@@ -714,7 +725,8 @@ function showStart() {
       </section>
       <div class="expect"><strong>${esc(T.expectTitle)}</strong><p>${esc(T.expect)}</p></div>
       <button class="btn" id="startBtn">${esc(T.start)} ${ICONS.arrow}</button>
-    </div>`);
+    </div>
+    ${seriesHTML()}`);
   $("startBtn").onclick = startGame;
   $("startBtn").focus();
 }
@@ -867,7 +879,8 @@ function showEnd() {
           <span class="num">${i + 1}</span><div><strong>${esc(t)}:</strong> ${esc(d)}</div>
         </li>`).join("")}
     </ol>
-    <div class="center"><button class="btn" id="againBtn">${esc(T.again)} ${ICONS.arrow}</button></div>`);
+    <div class="center"><button class="btn" id="againBtn">${esc(T.again)} ${ICONS.arrow}</button></div>
+    ${seriesHTML()}`);
   $("againBtn").onclick = startGame;
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
