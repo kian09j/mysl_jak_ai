@@ -219,6 +219,7 @@
   .footnote { margin: 32px 0 0; padding-top: 12px; border-top: 1px solid var(--line); font-size: 12px; color: var(--faint); }
   .series { margin: 26px 0 0; font-size: 14px; color: var(--muted); }
   .series a { color: var(--blue-text); margin-right: 10px; white-space: nowrap; }
+  .series.home { margin-top: 8px; }
   .hidden { display: none !important; }
 
   /* Start and end pages */
@@ -516,6 +517,7 @@ const TEXT = {
     endTitle: "Jak to wykorzystać w pracy z Copilotem",
     again: "Zagraj jeszcze raz",
     series: "Z tej samej serii:",
+    home: "Wszystkie gry z serii AI w pracy",
     games: [["Popraw polecenie", "https://kian09j.github.io/popraw_polecenie/"], ["Czy mogę to wkleić?", "https://kian09j.github.io/czy_moge_to_wkleic/"], ["Złap halucynację", "https://kian09j.github.io/zlap_halucynacje/"]],
     footnote: "Prawdopodobieństwa są przykładowe, żeby pokazać zasadę działania."
   },
@@ -557,6 +559,7 @@ const TEXT = {
     endTitle: "How to use this with Copilot",
     again: "Play again",
     series: "Also in this series:",
+    home: "All games in the AI at work series",
     games: [["Fix the prompt", "https://kian09j.github.io/popraw_polecenie/"], ["Can I paste this?", "https://kian09j.github.io/czy_moge_to_wkleic/"], ["Catch the hallucination", "https://kian09j.github.io/zlap_halucynacje/"]],
     footnote: "The probabilities are examples, to show how it works."
   }
@@ -696,7 +699,8 @@ function startGame() { current = 0; score = 0; results = []; showRound(); }
 
 // Links to the other games in the series, keeping the current language.
 function seriesHTML() {
-  return `<p class="series">${esc(T.series)} ${T.games.map(([name, url]) => `<a href="${url}?lang=${lang}">${esc(name)} ${ICONS.arrow}</a>`).join("")}</p>`;
+  return `<p class="series">${esc(T.series)} ${T.games.map(([name, url]) => `<a href="${url}?lang=${lang}">${esc(name)} ${ICONS.arrow}</a>`).join("")}</p>
+    <p class="series home"><a href="https://kian09j.github.io/?lang=${lang}">${esc(T.home)} ${ICONS.arrow}</a></p>`;
 }
 
 function showStart() {
