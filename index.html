@@ -10,7 +10,7 @@
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://kian09j.github.io/mysl_jak_ai/">
 <meta property="og:title" content="Myśl jak AI / Think like AI">
-<meta property="og:description" content="Zgadnij, które słowo wybierze AI, i zobacz, jak działa model językowy. Guess which word the AI would pick and see how a language model works. 13 rund / rounds, PL / EN.">
+<meta property="og:description" content="Zgadnij, które słowo wybierze AI, i zobacz, jak działa model językowy. Guess which word the AI would pick and see how a language model works. 14 rund / rounds, PL / EN.">
 <meta property="og:image" content="https://kian09j.github.io/mysl_jak_ai/og-image.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
@@ -279,7 +279,7 @@
       <button type="button" data-lang="en" aria-pressed="false">EN</button>
     </div>
     <div class="stats hidden" id="stats">
-      <div class="pill" id="progressText">1/13</div>
+      <div class="pill" id="progressText">1/14</div>
       <div class="pill" id="scoreText"></div>
     </div>
   </header>
@@ -305,7 +305,14 @@ const ROUNDS_PL = [
   {
     sentence: "Proszę o przesłanie raportu do ___",
     options: [["piątku", 46], ["jutra", 31], ["końca tygodnia", 19], ["Wielkanocy", 4]],
-    lesson: "AI nie zna Twojego terminu. Jeśli go nie podasz, zgadnie to, co typowe. Konkretne informacje wpisuj w polecenie."
+    lesson: "AI nie zna Twojego terminu. Jeśli go nie podasz, zgadnie to, co typowe. Zobacz, co się zmieni w następnej rundzie."
+  },
+  {
+    context: "Mail z działu finansów: „Raport potrzebujemy do środy.”",
+    icon: "mail",
+    sentence: "Proszę o przesłanie raportu do ___",
+    options: [["środy", 89], ["piątku", 6], ["jutra", 4], ["końca tygodnia", 1]],
+    lesson: "Teraz AI widzi mail z terminem, więc wybiera środę. Gdy ma Twoje informacje, korzysta z nich. Gdy ich nie ma, zgaduje. Konkretne terminy wpisuj w polecenie."
   },
   {
     sentence: "Spotkanie zespołu odbędzie się w sali ___",
@@ -391,7 +398,14 @@ const ROUNDS_EN = [
   {
     sentence: "Please send the report by ___",
     options: [["Friday", 46], ["tomorrow", 31], ["the end of the week", 19], ["Easter", 4]],
-    lesson: "AI doesn't know your deadline. If you don't give it one, it guesses what's typical. Put specific details in your prompt."
+    lesson: "AI doesn't know your deadline. If you don't give it one, it guesses what's typical. See what changes in the next round."
+  },
+  {
+    context: "Email from Finance: “We need the report by Wednesday.”",
+    icon: "mail",
+    sentence: "Please send the report by ___",
+    options: [["Wednesday", 89], ["Friday", 6], ["tomorrow", 4], ["the end of the week", 1]],
+    lesson: "Now the AI can see the email with the deadline, so it picks Wednesday. When it has your information, it uses it. When it doesn't, it guesses. Put specific deadlines in your prompt."
   },
   {
     sentence: "The team meeting will be held in the ___ room",
@@ -481,7 +495,7 @@ const TEXT = {
     ],
     example: { sentence: "„Dzień dobry, w nawiązaniu do naszej …”", rows: [["rozmowy", 68], ["współpracy", 17], ["umowy", 11]] },
     expectTitle: "Czego się spodziewać?",
-    expect: "13 krótkich rund, około 5 minut. W każdej zgadujesz, które słowo wybrałoby AI. Potem zobaczysz prawdopodobieństwa i dowiesz się, co z tego wynika w pracy z Copilotem.",
+    expect: "14 krótkich rund, około 5 minut. W każdej zgadujesz, które słowo wybrałoby AI. Potem zobaczysz prawdopodobieństwa i dowiesz się, co z tego wynika w pracy z Copilotem.",
     start: "Zaczynamy",
     think: "Hmm… które słowo wybrałaby AI?",
     round: "Runda",
@@ -523,7 +537,7 @@ const TEXT = {
     ],
     example: { sentence: "“Hi, following up on our …”", rows: [["conversation", 68], ["partnership", 17], ["contract", 11]] },
     expectTitle: "What to expect",
-    expect: "13 short rounds, about 5 minutes. In each one, you guess which word the AI would pick. Then you'll see the probabilities and learn what it means when you work with Copilot.",
+    expect: "14 short rounds, about 5 minutes. In each one, you guess which word the AI would pick. Then you'll see the probabilities and learn what it means when you work with Copilot.",
     start: "Let's go",
     think: "Hmm… which word would the AI pick?",
     round: "Round",
@@ -568,6 +582,7 @@ const ICONS = {
   calendar: "📅",
   note: "📝",
   chat: "💬",
+  mail: "📧",
   bulb: "💡",
   die: `<span class="die">🎲</span>`,
   arrow: "→"
